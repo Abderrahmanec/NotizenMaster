@@ -84,7 +84,7 @@ function Register() {
     }
 
     // Registrierung an den Backend-Server senden
-    fetch("http://192.168.178.119:8080/api/auth/register", {
+    fetch("http://192.168.178.147:8080/api/auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
