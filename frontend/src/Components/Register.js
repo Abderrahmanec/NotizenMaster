@@ -76,6 +76,9 @@ function Register() {
     if (!formData.password) {
       newErrors.password = "Password is required";
     }
+    else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters long";
+    }
 
     // Wenn Fehler vorhanden sind, Fehler anzeigen
     if (Object.keys(newErrors).length > 0) {
