@@ -18,6 +18,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import org.bootstmytool.backend.service.*;
+
 /**
  * Filter, der jede Anfrage überprüft und sicherstellt, dass der Benutzer authentifiziert ist,
  * indem ein gültiger JWT-Token im Authorization-Header der Anfrage übermittelt wird.

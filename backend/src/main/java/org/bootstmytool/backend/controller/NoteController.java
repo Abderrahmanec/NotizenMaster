@@ -85,7 +85,7 @@ public class NoteController {
         logger.info("Erstelle Notiz für Benutzer: {} (ID: {}, Rollen: {})",
                 user.getUsername(),
                 user.getId());
-               // user.getRoles()); // Optional: Weitere Details hinzufügen, falls benötigt
+
 
         try {
             // Erstellen einer neuen Notiz

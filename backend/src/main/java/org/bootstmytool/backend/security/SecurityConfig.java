@@ -1,5 +1,4 @@
 package org.bootstmytool.backend.security;
-
 import jakarta.annotation.PostConstruct;
 import org.bootstmytool.backend.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Value;
