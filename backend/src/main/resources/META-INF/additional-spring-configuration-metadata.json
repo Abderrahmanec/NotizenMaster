@@ -14,5 +14,10 @@
       "name": "jwt.prefix",
       "type": "java.lang.String",
       "description": "Description for jwt.prefix."
+    },
+    {
+      "name": "mangement.endpoints.web.exposure.include",
+      "type": "java.lang.String",
+      "description": "Description for mangement.endpoints.web.exposure.include."
     }
   ] }

@@ -94,6 +94,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Aktiviert CORS
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/api/auth/**").permitAll() // Authentifizierung wird für Auth-Endpunkte nicht verlangt
+                    .requestMatchers("/actuator/**").permitAll() // Erlaubt den Zugriff auf Actuator-Endpunkte
                     .anyRequest().authenticated() // Alle anderen Anfragen erfordern Authentifizierung
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless-Session
@@ -113,10 +114,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:3000","http://localhost:3001", "http://192.168.178.147:3000")); // Frontend-URLs erlauben
+        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:3000","http://localhost:3001", "http://192.168.178.144:3000")); // Frontend-URLs erlauben
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE")); // Erlaubte HTTP-Methoden
         corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type")); // Erlaubte Header
-
+        corsConfiguration.setAllowCredentials(true); // Erlaubt Cookies und Authentifizierung
         // Registrierung der CORS-Konfiguration für alle Endpunkte
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
