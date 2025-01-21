@@ -5,6 +5,8 @@ import org.bootstmytool.backend.repository.NoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class NoteService {
     
@@ -29,5 +31,9 @@ public class NoteService {
      */
     public Note getNoteById(int id) {
         return noteRepository.findById(id).orElse(null);
+    }
+
+    public List<Note> getNotesByUserId(int id) {
+        return noteRepository.findByUserId(id);
     }
 }

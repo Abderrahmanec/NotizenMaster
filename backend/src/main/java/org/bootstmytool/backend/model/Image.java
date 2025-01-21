@@ -82,4 +82,15 @@ public class Image {
     public void setNote(org.bootstmytool.backend.model.Note note) {
         this.note = note;
     }
+
+    //set and get methods fuer url
+    public void setUrl(String s) {
+        throw new UnsupportedOperationException("Nicht unterstützt."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public String getUrl() {
+        throw new UnsupportedOperationException("Nicht unterstützt."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
+
+

@@ -28,5 +28,7 @@ public interface NoteRepository extends JpaRepository<Note, Integer> { // ID ist
      * @return Eine Option mit der Note, falls gefunden
      */
     Optional<Note> findById(int noteId); // Findet eine Note anhand ihrer ID
+
+    List<Note> findByUserId(int id);
 }
 

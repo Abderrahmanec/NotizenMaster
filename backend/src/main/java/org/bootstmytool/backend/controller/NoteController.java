@@ -12,9 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.bootstmytool.backend.model.User;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -132,4 +130,65 @@ public class NoteController {
         }
     }
 
+
+    //Get alle Nozizen
+    @GetMapping("/get")
+    public ResponseEntity<List<Note>> getNotesForUser(@RequestHeader("Authorization") String authHeader) {
+        logger.info("Received request to get notes for user");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            logger.warn("Authorization header is missing or invalid.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.emptyList());
+        }
+
+        String token = authHeader.substring(7);
+
+        String username;
+        try {
+            username = jwtService.extractUsername(token);
+        } catch (Exception e) {
+            logger.error("Error extracting username from token", e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+        }
+
+        Optional<User> optionalUser = userService.findByUsername(username);
+        if (optionalUser.isEmpty()) {
+            logger.warn("User not found: {}", username);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections.emptyList());
+        }
+
+        User user = optionalUser.get();
+        logger.info("Fetching notes for user: {} (ID: {})", user.getUsername(), user.getId());
+
+        try {
+            List<Note> notes = noteService.getNotesByUserId((int) user.getId());
+
+            if (notes.isEmpty()) {
+                logger.info("No notes found for user ID: {}", user.getId());
+                return ResponseEntity.noContent().build();
+            }
+
+            // Ensure the image URL is set correctly for each note
+            notes.forEach(note -> {
+                if (note.getImages() != null) {
+                    note.getImages().forEach(image -> {
+                        String imageName = image.getUrl();
+                        image.setUrl("http://localhost:8080/images/" + imageName);
+                        logger.info("Constructed image URL: {}", image.getUrl());
+                    });
+                }
+            });
+
+            return ResponseEntity.ok(notes);
+        } catch (Exception e) {
+            logger.error("Error retrieving notes for user ID: {}", user.getId(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+        }
+    }
+
+
+
+
 }
+
+
