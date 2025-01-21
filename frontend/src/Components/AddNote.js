@@ -73,7 +73,7 @@ function AddNote() {
 
     // Daten an den Server senden
     try {
-      const response = await fetch('http://192.168.178.185:8080/notes', {
+      const response = await fetch('http://localhost:8080/notes', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`, // Authentifizierung mit dem Token
