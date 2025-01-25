@@ -1,4 +1,4 @@
-package org.bootstmytool.notizenbackend.netwrok;
+package org.bootstmytool.backend.security;
 
 
 import com.fasterxml.jackson.core.StreamWriteConstraints;
