@@ -2,9 +2,13 @@ package org.bootstmytool.backend.controller;
 
 import org.bootstmytool.backend.model.Image;
 import org.bootstmytool.backend.model.Note;
+import org.bootstmytool.backend.service.JwtService;
+import org.bootstmytool.backend.service.NoteService;
+import org.bootstmytool.backend.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.bootstmytool.backend.model.User;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,15 +32,21 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "http://localhost:3000") // Erlaubt Anfragen von der angegebenen Herkunft (z. B. lokale Frontend-Anwendung)
 public class NoteController {
 
-    @Autowired
-    private org.bootstmytool.backend.service.NoteService noteService; // Service zum Verwalten der Notizen
+    // NoteController-Attribute
+    private final NoteService noteService;
+    private final UserService userService;
+    private final JwtService jwtService;
 
-    @Autowired
-    private org.bootstmytool.backend.service.UserService userService; // Service zum Verwalten der Benutzerdaten
+    @Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
 
+   // NoteController-Konstruktor mit den erforderlichen Services
     @Autowired
-    private org.bootstmytool.backend.service.JwtService jwtService; // Service zum Verwalten des JWT-Tokens
-
+    public NoteController(NoteService noteService, UserService userService, JwtService jwtService) {
+        this.noteService = noteService;
+        this.userService = userService;
+        this.jwtService = jwtService;
+    }
     private static final Logger logger = LoggerFactory.getLogger(NoteController.class); // Logger für den Controller
 
     /**
@@ -56,88 +69,32 @@ public class NoteController {
             @RequestParam("tags") String tags,
             @RequestParam(value = "images", required = false) MultipartFile[] images) {
 
-        logger.info("Empfangene Anfrage zum Erstellen einer Notiz mit Titel: {}", title);
-
-        // Überprüfen des Authentifizierungs-Headers
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            logger.warn("Fehlender oder ungültiger Autorisierungs-Header.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ungültiger Autorisierungs-Header.");
-        }
-
-        String token = authHeader.substring(7); // Extrahiert das Token aus dem Header
-        String username = jwtService.extractUsername(token); // Extrahiert den Benutzernamen aus dem JWT-Token
-
-        // Überprüfen, ob der Benutzername gültig ist
-        if (username == null) {
-            logger.warn("Fehler beim Extrahieren des Benutzernamens aus dem Token.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Ungültiges Token.");
-        }
-
-        // Benutzerdaten abrufen
-        User user = userService.getUserByUsername(username);
-        if (user == null) {
-            logger.warn("Benutzer nicht gefunden: {}", username);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Benutzer nicht gefunden.");
-        }
-
-        logger.info("Erstelle Notiz für Benutzer: {} (ID: {}, Rollen: {})",
-                user.getUsername(),
-                user.getId());
-
-
         try {
-            // Erstellen einer neuen Notiz
-            org.bootstmytool.backend.model.Note note = new Note();
-            note.setTitle(title); // Titel der Notiz
-            note.setContent(description); // Inhalt der Notiz
-
-            // Tags in eine Liste umwandeln
-            List<String> tagList = Arrays.stream(tags.split(","))
-                    .map(String::trim)
-                    .collect(Collectors.toList());
-            note.setTags(tagList); // Tags zuweisen
-            note.setUser(user); // Notiz dem Benutzer zuweisen
-
-            // Optional: Bilder zu der Notiz hinzufügen
-            if (images != null && images.length > 0) {
-                List<Image> imageList = Arrays.stream(images)
-                        .map(image -> {
-                            try {
-                                Image img = new Image();
-                                img.setData(image.getBytes()); // Bilddaten extrahieren
-                                img.setNote(note); // Bild der Notiz zuweisen
-                                return img;
-                            } catch (IOException e) {
-                                throw new RuntimeException("Fehler beim Verarbeiten des Bildes.", e);
-                            }
-                        })
-                        .collect(Collectors.toList());
-                note.setImages(imageList); // Bilder zu der Notiz zuweisen
-            }
-
-            // Speichern der Notiz
+            User user = validateAuthorization(authHeader);
+            Note note = buildNoteObject(title, description, tags, images, user);
             Note savedNote = noteService.createNote(note);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "note", savedNote,
-                    "user", Map.of(
-                            "username", user.getUsername(),
-                            "id", user.getId()
-                    )
-            ));
-        } catch (RuntimeException e) {
-            logger.error("Fehler beim Erstellen der Notiz für Benutzer {}: {}", username, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fehler beim Erstellen der Notiz.");
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedNote);
+        } catch (IllegalArgumentException | SecurityException e) {
+            logger.warn(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error creating note: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create note.");
         }
     }
 
-
-    //Get alle Nozizen
+    /**
+     * Endpunkt zum Abrufen von Notizen für den authentifizierten Benutzer.
+     * Der Benutzer muss authentifiziert sein, um Notizen abzurufen.
+     *
+     * @param authHeader Die Autorisierungs-Header mit dem JWT-Token
+     * @return ResponseEntity mit den Notizen des Benutzers
+     */
     @GetMapping("/get")
     public ResponseEntity<List<Note>> getNotesForUser(@RequestHeader("Authorization") String authHeader) {
-        logger.info("Received request to get notes for user");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            logger.warn("Authorization header is missing or invalid.");
+            logger.warn("Invalid Authorization header");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.emptyList());
         }
 
@@ -147,8 +104,7 @@ public class NoteController {
         try {
             username = jwtService.extractUsername(token);
         } catch (Exception e) {
-            logger.error("Error extracting username from token", e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
         }
 
         Optional<User> optionalUser = userService.findByUsername(username);
@@ -158,13 +114,11 @@ public class NoteController {
         }
 
         User user = optionalUser.get();
-        logger.info("Fetching notes for user: {} (ID: {})", user.getUsername(), user.getId());
 
         try {
             List<Note> notes = noteService.getNotesByUserId((int) user.getId());
 
             if (notes.isEmpty()) {
-                logger.info("No notes found for user ID: {}", user.getId());
                 return ResponseEntity.noContent().build();
             }
 
@@ -173,22 +127,95 @@ public class NoteController {
                 if (note.getImages() != null) {
                     note.getImages().forEach(image -> {
                         String imageName = image.getUrl();
-                        image.setUrl("http://localhost:8080/images/" + imageName);
-                        logger.info("Constructed image URL: {}", image.getUrl());
+                        image.setUrl(baseUrl + "/image/" + imageName);
                     });
                 }
             });
 
             return ResponseEntity.ok(notes);
         } catch (Exception e) {
-            logger.error("Error retrieving notes for user ID: {}", user.getId(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
         }
     }
 
 
+    /**
+     * Validiert den Autorisierungs-Header und extrahiert den Benutzer aus dem JWT-Token.
+     * @param authHeader
+     * @return
+     */
+    private User validateAuthorization(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new SecurityException("Invalid Authorization header.");
+        }
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+        if (username == null) {
+            throw new SecurityException("Invalid token.");
+        }
+        User user = userService.getUserByUsername(username);
+        if (user == null) {
+            throw new SecurityException("Benutzer nicht gefunden .");
+        }
+        return user;
+    }
 
 
+    /**
+     * Erstellt ein Note-Objekt aus den übergebenen Parametern.
+     * @param title
+     * @param description
+     * @param tags
+     * @param images
+     * @param user
+     * @return
+     */
+    private Note buildNoteObject(String title, String description, String tags, MultipartFile[] images, User user) {
+        Note note = new Note();
+        note.setTitle(title);
+        note.setContent(description);
+        note.setTags(Arrays.stream(tags.split(",")).map(String::trim).collect(Collectors.toList()));
+        note.setUser(user);
+
+        if (images != null) {
+            // Add processed images to the note
+            note.setImages(Arrays.stream(images).map(this::processImage).collect(Collectors.toList()));
+        }
+
+        return note;
+    }
+
+    /**
+     * Processes behandelte das Bild und speichert es im Dateisystem.
+     * @param file
+     * @return
+     */
+    private Image processImage(MultipartFile file) {
+        try {
+            // Create directory if it doesn't exist
+            Path imagePath = Path.of("backend/src/main/resources/static/images/"); // Correct directory for static images
+            if (!Files.exists(imagePath)) {
+                Files.createDirectories(imagePath);
+            }
+
+            // Create a unique filename by appending a timestamp
+          //  String imageName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            String imageName = System.currentTimeMillis() + "_" + file.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_");
+            Path targetPath = imagePath.resolve(imageName);
+
+            // Save image to the file system
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+            // Create image entity
+            Image image = new Image();
+            image.setData(file.getBytes());
+            image.setUrl(imageName);  // Store only the image name
+            return image;
+        } catch (IOException e) {
+            logger.warn("Error processing image {}: {}", file.getOriginalFilename(), e.getMessage());
+            throw new RuntimeException("Error processing image.");
+        }
+    }
 }
 
 
