@@ -26,5 +26,6 @@ public interface ImageRepository extends JpaRepository<Image, Integer> {
     // Retrieve all images for a specific note
     List<Image> findAllByNoteId(int noteId);
 
+    // Find images by URL
     List<Image> findByUrl(String url);
 }
