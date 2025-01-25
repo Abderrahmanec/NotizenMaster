@@ -3,6 +3,8 @@ package org.bootstmytool.backend.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,19 +20,20 @@ public class Note {
     private int id; // Die eindeutige ID der Notiz
 
     private String title; // Der Titel der Notiz
+    @Lob
     private String content; // Der Inhalt der Notiz
 
     @ElementCollection
     @CollectionTable(name = "note_tags", joinColumns = @JoinColumn(name = "note_id"))
-    private List<String> tags; // Die Tags, die der Notiz zugeordnet sind
+    private List<String> tags=new ArrayList<>(); // Die Tags, die der Notiz zugeordnet sind
 
     @ManyToOne
     @JsonBackReference // Verhindert die rekursive Serialisierung
     private org.bootstmytool.backend.model.User user; // Der Benutzer, der die Notiz erstellt hat
 
-    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "note",fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference // Verwaltet die Kindobjekte (Bilder)
-    private List<Image> images; // Eine Liste von Bildern, die mit der Notiz verbunden sind
+    private List<Image> images=new ArrayList<>(); // Eine Liste von Bildern, die mit der Notiz verbunden sind
 
     // Konstruktoren, Getter und Setter
 
@@ -146,6 +149,6 @@ public class Note {
      * @param imageList Eine Liste der Bilder
      */
     public void setImages(List<org.bootstmytool.backend.model.Image> imageList) {
-        // Methode implementiert, aber keine tatsächliche Zuweisung der Bilder in diesem Fall
+        this.images = imageList;
     }
 }
