@@ -1,6 +1,6 @@
-package org.bootstmytool.notizenbackend.repository;
+package org.bootstmytool.backend.repository;
 
-import org.bootstmytool.notizenbackend.model.Image;
+import org.bootstmytool.backend.model.Image;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,4 +25,6 @@ public interface ImageRepository extends JpaRepository<Image, Integer> {
 
     // Retrieve all images for a specific note
     List<Image> findAllByNoteId(int noteId);
+
+    List<Image> findByUrl(String url);
 }
