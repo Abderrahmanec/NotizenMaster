@@ -9,12 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.bootstmytool.backend.model.User;
 
+import javax.sound.midi.InvalidMidiDataException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -216,6 +218,70 @@ public class NoteController {
             throw new RuntimeException("Error processing image.");
         }
     }
+
+
+    /**
+     * Endpunkt zum Löschen einer Notiz anhand ihrer ID.
+     * Der Benutzer muss authentifiziert sein, um eine Notiz zu löschen.
+     *
+     * @param id Die ID der zu löschenden Notiz
+     * @return ResponseEntity mit dem Ergebnis der Löschaktion
+     */
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteNote(@PathVariable("id") int id) {
+        try {
+            String result = noteService.deleteNoteById(id);
+            return ResponseEntity.ok().body(result); // Return the fun message
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage()); // Return the fun error message
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Oops!. 🛠️");
+        }
+    }
+
+
+    /**
+     * Endpunkt zum Bearbeiten einer Notiz anhand ihrer ID.
+     * Der Benutzer muss authentifiziert sein, um eine Notiz zu bearbeiten.
+     *
+     * @param id Die ID der zu bearbeitenden Notiz
+     * @param note Die aktualisierte Notiz
+     * @return ResponseEntity mit der aktualisierten Notiz
+     */
+    @PutMapping("/edit/{id}")
+    public ResponseEntity<?> editNote(@PathVariable("id") int id, @RequestBody Note note) {
+        try {
+            // Log the received note and ID
+            System.out.println("Editing note with ID: " + id);
+            System.out.println("Received note: " + note);
+
+            // Perform validation checks
+            if (note == null) {
+                return ResponseEntity.badRequest().body("Note data is required.");
+            }
+            if (note.getId() != 0 && note.getId() != id) {
+                return ResponseEntity.badRequest().body("ID in the path does not match the ID in the note object.");
+            }
+
+            // Call the service to update the note
+            Note updatedNote = noteService.editNoteById(id, note);
+
+            // Check if the note was updated
+            if (updatedNote == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update the note.");
+            }
+
+            // Return updated note
+            return ResponseEntity.ok(updatedNote);
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Note not found: " + ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid data: " + ex.getMessage());
+        }
+    }
+
+
 }
+
 
 
