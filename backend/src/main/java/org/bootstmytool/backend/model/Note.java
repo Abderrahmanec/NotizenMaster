@@ -31,7 +31,7 @@ public class Note {
     @JsonBackReference // Verhindert die rekursive Serialisierung
     private org.bootstmytool.backend.model.User user; // Der Benutzer, der die Notiz erstellt hat
 
-    @OneToMany(mappedBy = "note",fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "note",fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonManagedReference // Verwaltet die Kindobjekte (Bilder)
     private List<Image> images=new ArrayList<>(); // Eine Liste von Bildern, die mit der Notiz verbunden sind
 
