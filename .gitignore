@@ -83,4 +83,8 @@ target/maven-archiver/
 target/classes/
 
 # Ignore images folder in resources
-/src/main/resources/static/images/*
+/src/main/resources/static/*
+
+# Ignore H2 database files
+backend/src/main/resources/data.mv.db
+backend/src/main/resources/data.trace.db
