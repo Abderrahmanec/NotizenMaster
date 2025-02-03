@@ -13,6 +13,7 @@ import java.util.List;
  * Eine Notiz ist mit einem Benutzer in einer "Viele-zu-Eins"-Beziehung verknüpft.
  */
 @Entity
+@Table(name = "note")
 public class Note {
 
     @Id
