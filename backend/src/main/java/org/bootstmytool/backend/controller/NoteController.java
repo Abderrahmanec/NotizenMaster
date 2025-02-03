@@ -5,18 +5,17 @@ import org.bootstmytool.backend.model.Note;
 import org.bootstmytool.backend.service.JwtService;
 import org.bootstmytool.backend.service.NoteService;
 import org.bootstmytool.backend.service.UserService;
+import org.bootstmytool.backend.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.bootstmytool.backend.model.User;
-
-import javax.sound.midi.InvalidMidiDataException;
+import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -232,7 +231,7 @@ public class NoteController {
         try {
             String result = noteService.deleteNoteById(id);
             return ResponseEntity.ok().body(result); // Return the fun message
-        } catch (ResourceNotFoundException ex) {
+        } catch (ResponseStatusException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage()); // Return the fun error message
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Oops!. 🛠️");
@@ -273,7 +272,7 @@ public class NoteController {
 
             // Return updated note
             return ResponseEntity.ok(updatedNote);
-        } catch (ResourceNotFoundException ex) {
+        } catch (ResponseStatusException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Note not found: " + ex.getMessage());
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid data: " + ex.getMessage());
