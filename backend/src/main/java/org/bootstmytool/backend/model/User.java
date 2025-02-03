@@ -15,7 +15,7 @@ import java.util.List;
  * Die Klasse implementiert die Schnittstelle für die Autorisierungen und Rollenzuweisungen.
  */
 @Entity
-@Data
+@Table(name = "users")
 public class User {
 
     @Id
