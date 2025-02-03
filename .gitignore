@@ -84,6 +84,12 @@ target/classes/
 
 # Ignore images folder in resources
 /src/main/resources/static/*
+backend/src/main/resources/static/*
+
+# Ignore any other unnecessary resources
+backend/src/main/resources/META-INF/
+backend/src/main/resources/WEB-INF/
+
 
 # Ignore H2 database files
 backend/src/main/resources/data.mv.db
