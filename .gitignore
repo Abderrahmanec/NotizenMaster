@@ -81,3 +81,6 @@ mui-logs/
 target/maven-status/
 target/maven-archiver/
 target/classes/
+
+# Ignore images folder in resources
+/src/main/resources/static/images/*
