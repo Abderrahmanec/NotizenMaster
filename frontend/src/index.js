@@ -1,17 +1,35 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom";
+import App from "./App";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+// Create a custom theme with breakpoints
+const theme = createTheme({
+  breakpoints: {
+    values: {
+      xs: 0, // Smallest screen (phone)
+      sm: 600, // Mobile screen width
+      md: 900, // Tablet screen width
+      lg: 1200, // Large screens (laptop)
+      xl: 1536, // Extra large screens
+    },
+  },
+  palette: {
+    primary: {
+      main: "#1976d2", // Customize primary color
+    },
+    secondary: {
+      main: "#dc004e", // Customize secondary color
+    },
+  },
+});
+
+// Render the app with the custom theme
+ReactDOM.render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>
+    <ThemeProvider theme={theme}>
+      <App />
+    </ThemeProvider>
+  </React.StrictMode>,
+  document.getElementById("root")
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

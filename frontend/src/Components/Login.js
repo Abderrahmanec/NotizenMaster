@@ -110,7 +110,7 @@ function Login() {
 
           // Nach einer kurzen Wartezeit zum Dashboard weiterleiten
           setTimeout(() => {
-            navigate("/dash"); // Zum Dashboard navigieren
+            navigate("/"); // Zum Dashboard navigieren
           }, 1500); // 1,5 Sekunden warten
         } else {
           setSnackbarMessage("Login fehlgeschlagen! Ungültige Anmeldedaten.");

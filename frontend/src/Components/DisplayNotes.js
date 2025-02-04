@@ -18,30 +18,37 @@ import {
 import { Edit, Delete } from "@mui/icons-material";
 import { styled } from "@mui/system";
 
-const NoteCard = styled(Card)({
+const NoteCard = styled(Card)(({ theme }) => ({
   margin: "15px",
   padding: "15px",
   boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
   borderRadius: "8px",
+  width: "300px",
   transition: "transform 0.3s, box-shadow 0.3s",
   "&:hover": {
     transform: "scale(1.03)",
     boxShadow: "0 8px 20px rgba(0, 0, 0, 0.15)",
   },
-});
+}));
 
-const NoteChip = styled(Chip)({
+const NoteChip = styled(Chip)(({ theme }) => ({
   margin: "4px",
   backgroundColor: "#f5f5f5",
   fontWeight: "bold",
-});
+}));
 
 const DisplayNotes = () => {
   const [notes, setNotes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
-  const [currentNote, setCurrentNote] = useState({ id: null, title: "", content: "", tags: [], images: [] });
+  const [currentNote, setCurrentNote] = useState({
+    id: null,
+    title: "",
+    content: "",
+    tags: [],
+    images: [],
+  });
 
   const token = localStorage.getItem("token");
 
@@ -86,14 +93,17 @@ const DisplayNotes = () => {
 
   const handleUpdateNote = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/notes/edit/${currentNote.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(currentNote),
-      });
+      const response = await fetch(
+        `http://localhost:8080/notes/edit/${currentNote.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(currentNote),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to update note");
@@ -109,12 +119,15 @@ const DisplayNotes = () => {
 
   const handleDeleteNote = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8080/notes/delete/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:8080/notes/delete/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to delete note");
