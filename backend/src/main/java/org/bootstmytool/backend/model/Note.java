@@ -1,6 +1,7 @@
 package org.bootstmytool.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -30,6 +31,7 @@ public class Note {
 
     @ElementCollection
     @CollectionTable(name = "note_tags", joinColumns = @JoinColumn(name = "note_id"))
+    @JsonIgnore
     private List<String> tags=new ArrayList<>(); // Die Tags, die der Notiz zugeordnet sind
 
     @ManyToOne
@@ -38,6 +40,7 @@ public class Note {
 
     @OneToMany(mappedBy = "note",fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonManagedReference // Verwaltet die Kindobjekte (Bilder)
+    @JsonIgnore
     private List<Image> images=new ArrayList<>(); // Eine Liste von Bildern, die mit der Notiz verbunden sind
 
     @Temporal(TemporalType.TIMESTAMP)
