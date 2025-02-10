@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -37,6 +39,11 @@ public class Note {
     @OneToMany(mappedBy = "note",fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonManagedReference // Verwaltet die Kindobjekte (Bilder)
     private List<Image> images=new ArrayList<>(); // Eine Liste von Bildern, die mit der Notiz verbunden sind
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @CreationTimestamp
+    private Date createdAt;
+
 
     // Konstruktoren, Getter und Setter
 
@@ -154,4 +161,13 @@ public class Note {
     public void setImages(List<org.bootstmytool.backend.model.Image> imageList) {
         this.images = imageList;
     }
+
+
+    /**
+     * Gibt das Erstellungsdatum der Notiz zurück.
+     *
+     * @return Das Erstellungsdatum der Notiz
+     */
+    public Date getCreatedAt() { return createdAt; }
+
 }
