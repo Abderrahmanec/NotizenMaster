@@ -280,6 +280,24 @@ public class NoteController {
     }
 
 
+    /**
+     * Endpunkt zum Suchen von Notizen anhand eines Suchbegriffs.
+     * Der Benutzer muss authentifiziert sein, um Notizen zu suchen.
+     *
+     * @param searchTerm Der Suchbegriff
+     * @return ResponseEntity mit den gefilterten Notizen
+     */
+    @GetMapping("/search/{searchTerm}")
+    public ResponseEntity<List<Note>> searchNotes(@PathVariable String searchTerm) {
+        try {
+            List<Note> notes = noteService.searchNotes(searchTerm);
+            return ResponseEntity.ok(notes); // Return filtered notes
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null); // Return error response if something goes wrong
+        }
+    }
+
 }
 
 
