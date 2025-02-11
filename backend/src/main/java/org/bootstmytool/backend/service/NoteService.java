@@ -84,6 +84,7 @@ public class NoteService {
         return null;
     }
 
+
     public List<Note> searchNotes(String searchTerm) {
         return noteRepository.findByTitleContainingOrContentContaining(searchTerm, searchTerm);
     }
