@@ -30,5 +30,7 @@ public interface NoteRepository extends JpaRepository<Note, Integer> { // ID ist
     Optional<Note> findById(int noteId); // Findet eine Note anhand ihrer ID
 
     List<Note> findByUserId(int id);
+
+    List<Note> findByTitleContainingOrContentContaining(String title, String content);
 }
 
