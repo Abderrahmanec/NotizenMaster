@@ -40,7 +40,6 @@ public class Note {
 
     @OneToMany(mappedBy = "note",fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonManagedReference // Verwaltet die Kindobjekte (Bilder)
-    @JsonIgnore
     private List<Image> images=new ArrayList<>(); // Eine Liste von Bildern, die mit der Notiz verbunden sind
 
     @Temporal(TemporalType.TIMESTAMP)
