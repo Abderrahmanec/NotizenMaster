@@ -29,9 +29,8 @@ public class Note {
     @Lob
     private String content; // Der Inhalt der Notiz
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "note_tags", joinColumns = @JoinColumn(name = "note_id"))
-    @JsonIgnore
     private List<String> tags=new ArrayList<>(); // Die Tags, die der Notiz zugeordnet sind
 
     @ManyToOne
