@@ -32,7 +32,7 @@ import java.util.List;
  * <p>Die Basis-URL für die Bild-URLs kann über die Eigenschaft {@code app.base-url} konfiguriert werden.
  * Der Standardwert ist {@code http://localhost:8080}.</p>
  *
- * @author Ihr Name
+ * @author Mohamed Cheikh
  * @version 1.0
  * @since 2025-01-01
  */
