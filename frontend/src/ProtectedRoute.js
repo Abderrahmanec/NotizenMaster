@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Assuming you have an AuthContext
+import { useAuth } from '../context/AuthContext'; //  AuthContext
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth(); // Get the user state from AuthContext
