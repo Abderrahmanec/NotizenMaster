@@ -1,4 +1,5 @@
 import axios from "axios"; // Importiere Axios für HTTP-Anfragen
+import { jwtDecode } from "jwt-decode"; // Importiere jwt-decode für JWT-Token dekodierung
 
 // Setze die Basis-URL für API-Aufrufe (hier als lokale Entwicklungsumgebung)
 const API_URL = "http://localhost:8080";
@@ -25,6 +26,18 @@ const handleApiError = (error, defaultMessage) => {
   }
 };
 
+const isTokenExpired = (token) => {
+  if (!token) return true;
+
+  try {
+    const { exp } = jwtDecode(token);
+    const currentTime = Math.floor(Date.now() / 1000);
+    return exp < currentTime;
+  } catch (error) {
+    return true; // Treat as expired if decoding fails
+  }
+};
+
 // Authentifizierungs-Token aus localStorage abrufen
 const getAuthToken = () => {
   return localStorage.getItem("token");
@@ -33,11 +46,17 @@ const getAuthToken = () => {
 // Setzt den Authorization-Header mit dem Token
 const setAuthHeader = () => {
   const token = getAuthToken();
-  if (token) {
+  if (token && !isTokenExpired(token)) {
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   } else {
-    delete api.defaults.headers.common["Authorization"];
+    logoutUser(); // wenn das Token abgelaufen ist, wird der Benutzer abgemeldet
   }
+};
+
+// Logout method
+const logoutUser = () => {
+  localStorage.removeItem("token");
+  window.location.href = "/login"; // Redirect to login page
 };
 
 // Wiederverwendbare Funktion für API-Aufrufe
