@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { AppBar, Toolbar, Button, Typography, IconButton, Drawer, List, ListItem, ListItemText, Box } from "@mui/material";
+import { AppBar, Toolbar, Button, Typography, IconButton, Drawer, List, ListItem, ListItemText, Box, ToggleButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import Brightness4Icon from "@mui/icons-material/Brightness4"; // Moon icon
+import Brightness7Icon from "@mui/icons-material/Brightness7"; // Sun icon
 import { useAuth } from "../context/AuthContext";
 import nmicIcon from '../assets/nmic.ico';
 import SearchBar from "./Notes/SearchBar";
@@ -9,7 +11,8 @@ import SearchBar from "./Notes/SearchBar";
 const Navbar = ({ toggleDarkMode, darkMode }) => {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");  // ✅ Add search state
+  const [searchTerm, setSearchTerm] = useState("");  
+  const isButtonEnabled = true;
 
   // Toggle Drawer (Burger menu)
   const handleDrawerToggle = () => {
@@ -34,7 +37,7 @@ const Navbar = ({ toggleDarkMode, darkMode }) => {
           </>
         ) : (
           <>
-            <ListItem button component={Link} to="/login">
+            <ListItem button={isButtonEnabled} component={Link} to="/login">
               <ListItemText primary="Login" />
             </ListItem>
             <ListItem button component={Link} to="/register">
@@ -71,10 +74,15 @@ const Navbar = ({ toggleDarkMode, darkMode }) => {
           {/* 🔹 Search Bar */}
           <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-          {/* Dark Mode Toggle Button */}
-          <Button color="inherit" onClick={toggleDarkMode}>
-            Toggle Dark/Light Mode
-          </Button>
+          {/* 🔥 Dark Mode Toggle Button with Icon */}
+          <ToggleButton
+            value="darkMode"
+            selected={darkMode}
+            onChange={toggleDarkMode}
+            sx={{ marginLeft: "10px", borderRadius: "50%", width: 40, height: 40 }}
+          >
+            {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+          </ToggleButton>
         </Toolbar>
       </AppBar>
 
