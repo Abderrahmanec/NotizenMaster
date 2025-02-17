@@ -37,7 +37,7 @@ const Form = styled("form")(({ theme }) => ({
   marginTop: theme.spacing(1),
 }));
 
-function Login() {
+export function Login() {
   // Zustandsvariablen für Formulardaten, Fehler, Snackbar und Passwortsichtbarkeit
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [errors, setErrors] = useState({ username: "", password: "" });
