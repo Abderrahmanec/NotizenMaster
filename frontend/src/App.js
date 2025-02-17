@@ -39,6 +39,7 @@ function App() {
             <Route path="/edit/:id" element={<EditNote />} />
           </Routes>
         </Router>
+        
       </AuthProvider>
     </ThemeProvider>
   );
