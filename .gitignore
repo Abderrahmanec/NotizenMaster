@@ -94,3 +94,6 @@ backend/src/main/resources/WEB-INF/
 # Ignore H2 database files
 backend/src/main/resources/data.mv.db
 backend/src/main/resources/data.trace.db
+
+# Ignore the generated JAR file
+backend/target/*
