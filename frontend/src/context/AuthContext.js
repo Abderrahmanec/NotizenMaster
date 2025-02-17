@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { jwtDecode } from "jwt-decode";
 import { Snackbar } from "@mui/material"; // Snackbar von Material UI importieren
+import  {logoutUser}  from "../api"; // API-Funktion zum Ausloggen des Benutzers	
 
 // Erstellen des AuthContext mit der React Context API
 const AuthContext = createContext();
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }) => {
 
         if (decodedUser.exp < currentTime) { // Wenn das Token abgelaufen ist
           console.error("Token ist abgelaufen");
-          localStorage.removeItem("token"); // Abgelaufenes Token entfernen
+          logoutUser(); // Abgelaufenes Token entfernen
           setUser(null); // Benutzerzustand zurücksetzen
           setAlertMessage("Ihre Sitzung ist abgelaufen. Bitte loggen Sie sich erneut ein.");
           setAlertSeverity("error"); // Fehlerbenachrichtigung anzeigen
@@ -45,19 +46,13 @@ export const AuthProvider = ({ children }) => {
     setLoading(false); // Laden beenden nach der Überprüfung des Tokens
   }, []);
 
-  // Logout-Funktion
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    setAlertMessage("Sie wurden abgemeldet.");
-    setAlertSeverity("info"); // Informationsbenachrichtigung beim Abmelden
-  };
+  
 
   // Ladezustand während der Authentifizierungsüberprüfung anzeigen
   if (loading) return <div>Laden...</div>;
 
   return (
-    <AuthContext.Provider value={{ user, setUser, logout }}>
+    <AuthContext.Provider value={{ user, setUser, logoutUser }}>
       {children}
       {/* Snackbar für Benachrichtigungen */}
       <Snackbar
