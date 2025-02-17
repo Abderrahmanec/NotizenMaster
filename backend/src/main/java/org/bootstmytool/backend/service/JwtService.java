@@ -20,7 +20,10 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
-    private static final long JWT_EXPIRATION_TIME = 1000 * 60 * 60 * 10; // 10 hours
+   // private static final long JWT_EXPIRATION_TIME = 1000 * 60 * 60 * 10; // 10 hours
+   //private static final long JWT_EXPIRATION_TIME = 1000 * 60 * 1; // 1 minute
+   @Value("${jwt.expiration}")
+   private long JWT_EXPIRATION_TIME;
 
     /**
      * Retrieves the signing key, ensuring it is at least 32 characters long.
@@ -62,8 +65,11 @@ public class JwtService {
      * Checks if the JWT token is expired.
      */
     public Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        Date expirationDate = extractExpiration(token);
+        System.out.println("Token expiration date: " + expirationDate);
+        return expirationDate.before(new Date());
     }
+
 
     /**
      * Extracts the expiration date from the JWT token.
