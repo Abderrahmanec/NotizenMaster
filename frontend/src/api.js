@@ -93,7 +93,7 @@ export const updateNote = async (noteId, updatedData) => {
 // Beispiel: DELETE-Anfrage zum Löschen einer Notiz
 export const deleteNote = async (noteId) => {
   try {
-    const response = await makeApiCall("delete", `/notes/${noteId}`);
+    const response = await makeApiCall("delete", `/notes/delete/${noteId}`);
     if (response && response.message) {
       return { success: true, message: response.message }; // Erfolgsnachricht zurückgeben
     } else {
