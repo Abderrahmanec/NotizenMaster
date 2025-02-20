@@ -12,20 +12,22 @@ const EditNote = () => {
   const [loading, setLoading] = useState(true); // State für Ladeanzeige
   const { id } = useParams(); // Route-Parameter für die Notiz-ID
   const navigate = useNavigate(); // Hook zum Navigieren zwischen Seiten
+  const [deleting, setDeleting] = useState(false);// State für das Löschen der Notiz
+ 
 
   // Abrufen der Notiz und der Bilder beim Laden der Seite
   useEffect(() => {
     const fetchNote = async () => {
       try {
-        const fetchedNote = await getNoteById(id); // Abrufen der Notiz mit der ID
-        console.log("Fetched Note:", fetchedNote);  // Debugging-Ausgabe
-        const fetchedImages = await fetchImagesForNote(id); // Abrufen der Bilder zur Notiz
-        console.log("Fetched Images:", fetchedImages); // Debugging-Ausgabe
-  
+        const [fetchedNote, fetchedImages] = await Promise.all([
+          getNoteById(id),
+          fetchImagesForNote(id).catch(() => []) // Return empty array if images not found
+        ]);
+
         setNote({
           title: fetchedNote.title || "", 
           content: fetchedNote.content || "", 
-          tag: fetchedNote.tag || "",
+          tag: fetchedNote.tags || "",
           images: fetchedImages || [], 
         });
       } catch (error) {
@@ -48,36 +50,53 @@ const EditNote = () => {
 
   // Handler für Bildauswahl
   const handleImageChange = (e) => {
-    setNewImage(e.target.files[0]); // Das ausgewählte Bild speichern
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      // Erstellen eines neuen Bildobjekts
+      setNewImage({
+        file: file,
+        preview: URL.createObjectURL(file) // Vorschau des Bildes
+      });
+    } else {
+      setError("Bitte wählen Sie ein gültiges Bild aus."); // Fehlerbehandlung
+    }
   };
 
   // Handler für das Löschen eines Bildes
   const handleDeleteImage = async (imageId) => {
+    setDeleting(true); // Ladeanzeige für das Löschen anzeigen
     try {
-      await deleteImage(id, imageId); // Bild löschen
-      setNote({
-        ...note,
+      await deleteImage(imageId); // Bild löschen
+      setNote(prev =>({
+        ...prev,
         images: note.images.filter((image) => image.id !== imageId), // Bild aus dem State entfernen
-      });
+      }));
     } catch (err) {
       setError("Fehler beim Löschen des Bildes. Bitte versuchen Sie es erneut."); // Fehlerbehandlung
+    }finally {
+      setDeleting(false);
     }
   };
 
   // Formularübermittlung für das Aktualisieren der Notiz
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("title", note.title); // Titel der Notiz hinzufügen
-    formData.append("content", note.content); // Inhalt der Notiz hinzufügen
-    formData.append("tag", note.tag); // Tag der Notiz hinzufügen
-
-    if (newImage) {
-      formData.append("image", newImage); // Neues Bild hinzufügen, falls vorhanden
-    }
-
     try {
-      await updateNote(id, formData); // Notiz aktualisieren
+      const updatedData = {
+        title: note.title,
+        content: note.content,
+        tag: note.tag,
+      
+      };
+
+      const response = await updateNote(id, updatedData, newImage);
+
+      // Lade die aktualisierte Notiz in den State
+      setNote({
+        ...response,
+        images: response.images || []
+      });
+
       navigate("/"); // Zurück zur Hauptseite nach erfolgreicher Aktualisierung
     } catch (error) {
       setError("Fehler beim Aktualisieren der Notiz. Bitte versuchen Sie es erneut."); // Fehlerbehandlung
@@ -107,7 +126,7 @@ const EditNote = () => {
                 <TextField
                   label="Titel"
                   fullWidth
-                  value={note.title ?? ""}
+                  value={note.title }
                   onChange={handleInputChange}
                   name="title"
                   required
@@ -121,7 +140,7 @@ const EditNote = () => {
                   fullWidth
                   multiline
                   rows={4}
-                  value={note.content || ""}
+                  value={note.content}
                   onChange={handleInputChange}
                   name="content"
                   required
@@ -133,7 +152,7 @@ const EditNote = () => {
                 <TextField
                   label="Tag"
                   fullWidth
-                  value={note.tag || ""}
+                  value={note.tag}
                   onChange={handleInputChange}
                   name="tag"
                 />
@@ -141,7 +160,33 @@ const EditNote = () => {
 
               {/* Bild hochladen */}
               <Grid item xs={12}>
-                <input type="file" onChange={handleImageChange} /> {/* Bildauswahl */}
+                <Button variant="contained" component="label">
+                   Bild hochladen
+                  <input
+                    type="file"
+                    hidden
+                    onChange={handleImageChange}
+                    accept="image/*"
+                  />
+                </Button>
+                {newImage && newImage.preview && (
+                  <Box sx={{ mb: 3 }}>
+                    <img
+                      src={newImage.preview}
+                      alt="Preview"
+                      style={{
+                        width: '100%',
+                        height: '200px',
+                        objectFit: 'cover',
+                        borderRadius: '4px',
+                      }}
+                    />
+                    <Typography variant="body2" sx={{ mt: 2 }}>
+                      Ausgewählt: {newImage.file.name}
+                    </Typography>
+                  </Box>
+                )}
+
               </Grid>
 
               {/* Bereits hochgeladene Bilder */}
@@ -152,30 +197,49 @@ const EditNote = () => {
                     {note.images.map((image) => (
                       <Box key={image.id} display="flex" alignItems="center" gap={2} mb={1}>
                         <img
-                          src={`http://localhost:8080/images/${image.filename}`}
+                          src={`${image.url}`}
                           alt={image.filename}
-                          width={100}
-                          height={100}
-                          style={{ borderRadius: "8px", objectFit: "cover", border: "1px solid #ccc" }}
+                          width="30%"
+                          height="40%"
+                          style={{ borderRadius: 1, objectFit: "cover", border: "1px solid #ccc" , 
+                            position: "relative",
+                            mb:4
+                          }}
                         />
-                        <IconButton onClick={() => handleDeleteImage(image.id)} color="error">
+
+                         <IconButton   sx={{
+                                    position: 'absolute',
+                                    top: 8,
+                                    right: 8,
+                                    backgroundColor: 'background.paper',
+                                  }}
+                                  onClick={() => handleDeleteImage(image.id)}
+                                  disabled={deleting}
+                                >
                           <DeleteIcon /> {/* Bild löschen */}
                         </IconButton>
                       </Box>
                     ))}
                   </div>
                 ) : (
-                  <Typography variant="body2">Keine Bilder für diese Notiz vorhanden.</Typography>
+                  <Typography variant="body2" color="text.secondary">Keine Bilder für diese Notiz vorhanden.</Typography>
                 )}
               </Grid>
 
               {/* Buttons */}
-              <Grid item xs={12} display="flex" justifyContent="space-between">
-                <Button variant="contained" color="secondary" onClick={() => navigate("/")}>
+              <Grid item xs={12} display="flex" justifyContent="flex-end" gap={2}>
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate("/")}
+                >
                   Abbrechen
                 </Button>
-                <Button type="submit" variant="contained" color="primary">
-                  Aktualisieren
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={deleting}
+                >
+                  {deleting ? <CircularProgress size={24} /> : 'Aktualisieren'}
                 </Button>
               </Grid>
             </Grid>
