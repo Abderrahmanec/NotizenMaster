@@ -85,10 +85,6 @@ export const getNotes = async () => {
   }
 };
 
-// Beispiel: PUT-Anfrage zum Aktualisieren einer Notiz
-export const updateNote = async (noteId, updatedData) => {
-  return makeApiCall("put", `/notes/edit/${noteId}`, updatedData);
-};
 
 // Beispiel: DELETE-Anfrage zum Löschen einer Notiz
 export const deleteNote = async (noteId) => {
@@ -104,21 +100,7 @@ export const deleteNote = async (noteId) => {
   }
 };
 
-// Beispiel: GET-Anfrage zum Abrufen einer Notiz anhand der ID
-export const getNoteById = async (noteId) => {
-  return makeApiCall("get", `/notes/${noteId}`);
-};
 
-// Bilder für eine Notiz abrufen
-export const fetchImagesForNote = async (noteId) => {
-  try {
-    const response = await makeApiCall("get", `/notes/${noteId}/images`);
-    return response; // Array mit Bildern zurückgeben
-  } catch (error) {
-    console.error("Fehler beim Abrufen der Bilder:", error);
-    throw new Error(handleApiError(error, "Fehler beim Abrufen der Bilder"));
-  }
-};
 
 // Suchfunktion für Notizen
 export const searchNotes = async (searchTerm) => {
@@ -175,17 +157,90 @@ export const createNote = async (formData, token) => {
   }
 };
 
-// Bild löschen
-export const deleteImage = async (noteId, imageId) => {
+
+
+// Bilder für eine Notiz abrufen
+export const fetchImagesForNote = async (noteId) => {
   try {
-    const response = await api.delete(`/notes/${noteId}/images/${imageId}`);
-    if (response.status === 200) {
-      return response.data; // Erfolgsnachricht oder relevante Daten zurückgeben
-    } else {
-      throw new Error("Fehler beim Löschen des Bildes.");
-    }
+    console.log("Request feom editNote to fetch the images...");
+    const response = await makeApiCall("get", `/image/note/${noteId}`);
+    console.log("Response from ImageController:", response.data);
+
+    response.data.forEach(image => {
+      console.log("The url:", image.url);
+      console.log("The id:", image.id);
+    });
+
+    return response.data; // Return array of images
   } catch (error) {
-    console.error("Fehler beim Löschen des Bildes:", error);
-    throw new Error("Fehler beim Löschen des Bildes. Bitte versuche es erneut.");
+    console.error("Fehler beim Abrufen der Bilder:", error);
+    throw new Error(handleApiError(error, "Fehler beim Abrufen der Bilder"));
+  }
+};
+
+
+
+// Beispiel: GET-Anfrage zum Abrufen einer Notiz anhand der ID
+export const getNoteById = async (noteId) => {
+  try {
+    const response = await makeApiCall("get", `/notes/get/${noteId}`);
+    console.log("Fetched Note "+response.data);
+    console.log("Fetched Note title: "+response.data.title);
+console.log("Fetched Note; "+response.data.tags);
+console.log("Fetched Note Images: "+response.data.images);
+console.log("Fetched Note url: "+response.data.url);
+    console.log("Fetched Note content"+response.data.content);
+    console.log(typeof response.data)
+    return response.data; // Rückgabe der abgerufenen Notiz
+  } catch (error) {
+    throw new Error(handleApiError(error, `Fehler beim Abrufen der Notiz mit ID: ${noteId}`));
+  }
+
+};
+
+// Beispiel: PUT-Anfrage zum Aktualisieren einer Notiz
+export const updateNote = async (noteId, noteData, imageFile) => {
+  try {
+    const formData = new FormData();
+
+    // Append note data as JSON string
+    formData.append("note", JSON.stringify(noteData));
+
+    // Append image file if exists
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
+
+    const response = await api.put(`/notes/edit/${noteId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error, "Error updating note"));
+  }
+};
+
+// Beispiel: POST-Anfrage zum Erstellen einer Notiz
+export const deleteImage = async (imageId) => {
+  try {
+    console.log("Requesting deleteImage to delete image with id: " + imageId);
+
+    const response = await fetch(`http://localhost:8080/image/delete/${imageId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete image");
+    }
+
+    console.log("Image deleted successfully");
+  } catch (error) {
+    console.error("Error deleting image:", error);
   }
 };
