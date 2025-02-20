@@ -2,7 +2,7 @@ package org.bootstmytool.backend.dto;
 
 public class ImageDTO {
     private String url;
-
+    private int id;
     /**
      * Erstellt ein neues ImageDTO.
      */
@@ -16,6 +16,11 @@ public class ImageDTO {
      */
     public ImageDTO(String url) {
         this.url = url;
+    }
+
+    public ImageDTO(int id, String s) {
+        this.id=id;
+        this.url=s;
     }
 
     /**
@@ -34,5 +39,13 @@ public class ImageDTO {
      */
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public void setId(int id) {
+        this.id=id;
+    }
+
+    public int getId() {
+        return id;
     }
 }
