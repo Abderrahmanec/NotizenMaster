@@ -208,7 +208,7 @@ const EditNote = () => {
                         />
 
                          <IconButton   sx={{
-                                    position: 'absolute',
+                                    position: 'relative',
                                     top: 8,
                                     right: 8,
                                     backgroundColor: 'background.paper',

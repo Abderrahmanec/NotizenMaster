@@ -417,8 +417,8 @@ public class NoteController {
 
 
 
-    @PutMapping(value = "/edit/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> editNote(
+    @PutMapping(value = "/edited/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> editNote12(
             @PathVariable("id") int id,
             @RequestPart("note") String noteJson,
             @RequestPart(value = "images", required = false) MultipartFile[] newImages,
@@ -504,4 +504,86 @@ public class NoteController {
         return ResponseEntity.ok(noteDTO);
     }
 
+
+
+
+
+
+
+    @PutMapping(value = "/editdeep/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> editNote(
+            @PathVariable("id") int id,
+            @RequestPart("note") String noteJson,
+            @RequestPart(value = "images", required = false) MultipartFile[] newImages,
+            @RequestHeader("Authorization") String authHeader) {
+
+        try {
+            // Validate authorization
+            User user = validateAuthorization(authHeader);
+
+            // Get existing note
+            Note existingNote = noteService.getNoteById(id);
+            if (existingNote == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Note not found");
+            }
+
+            // Check if the user owns the note
+            if (existingNote.getUser().getId() != user.getId()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("You don't have permission to edit this note");
+            }
+
+            // Convert JSON to NoteDTO
+            ObjectMapper objectMapper = new ObjectMapper();
+            NoteDTO noteUpdates = objectMapper.readValue(noteJson, NoteDTO.class);
+
+            // Update note fields
+            existingNote.setTitle(noteUpdates.getTitle());
+            existingNote.setContent(noteUpdates.getContent());
+            existingNote.setTags(noteUpdates.getTags());
+
+            // Handle image deletion (if imagesToDelete is provided in NoteDTO)
+            if (noteUpdates.getImagesToDelete() != null && !noteUpdates.getImagesToDelete().isEmpty()) {
+                List<Image> imagesToDelete = existingNote.getImages().stream()
+                        .filter(image -> noteUpdates.getImagesToDelete().contains(image.getId()))
+                        .collect(Collectors.toList());
+
+                for (Image image : imagesToDelete) {
+                    // Delete image from storage
+                    Files.deleteIfExists(Path.of("backend/src/main/resources/static/images/" + image.getUrl()));
+                    // Remove image from note
+                    existingNote.getImages().remove(image);
+                    imageRepository.delete(image);
+                }
+            }
+
+            // Handle new image uploads
+            if (newImages != null && newImages.length > 0) {
+                for (MultipartFile file : newImages) {
+                    if (!file.isEmpty()) {
+                        Image newImage = processImage(file);
+                        newImage.setNote(existingNote); // Set the note reference
+                        existingNote.getImages().add(newImage);
+                    }
+                }
+            }
+
+            // Save updated note
+            Note updatedNote = noteService.updateNote(existingNote);
+
+            // Convert to DTO for response
+            NoteDTO responseDto = convertToDto(updatedNote);
+
+            return ResponseEntity.ok(responseDto);
+
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid note format");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error processing images: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating note: " + e.getMessage());
+        }
+    }
 }

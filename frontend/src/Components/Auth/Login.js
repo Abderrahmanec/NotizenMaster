@@ -17,7 +17,7 @@ import { FaEye, FaEyeSlash, FaLock, FaUser } from "react-icons/fa";
 import { useNavigate, NavLink } from "react-router-dom"; // Importiere NavLink für das Routing
 import { jwtDecode } from "jwt-decode";
 import { loginUser } from "../../api";
-import { useAuth } from "frontend/src/context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 // Styled Components für das Design von Paper und Formular
 const StyledPaper = styled(Paper)(({ theme }) => ({

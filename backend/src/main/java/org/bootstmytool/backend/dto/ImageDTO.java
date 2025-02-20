@@ -18,9 +18,9 @@ public class ImageDTO {
         this.url = url;
     }
 
-    public ImageDTO(int id, String s) {
+    public ImageDTO(int id, String url) {
         this.id=id;
-        this.url=s;
+        this.url=url;
     }
 
     /**

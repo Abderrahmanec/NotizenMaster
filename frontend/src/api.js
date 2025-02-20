@@ -211,7 +211,7 @@ export const updateNote = async (noteId, noteData, imageFile) => {
       formData.append("image", imageFile);
     }
 
-    const response = await api.put(`/notes/edit/${noteId}`, formData, {
+    const response = await api.put(`/notes/editdeep/${noteId}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -239,7 +239,9 @@ export const deleteImage = async (imageId) => {
       throw new Error("Failed to delete image");
     }
 
-    console.log("Image deleted successfully");
+    const data = await response.json();
+    return data;
+
   } catch (error) {
     console.error("Error deleting image:", error);
   }
