@@ -11,10 +11,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
@@ -110,6 +107,24 @@ public class ImageController {
             }
         } catch (MalformedURLException e) {
             throw new RuntimeException("Error loading image: " + imageName, e);
+        }
+    }
+
+
+
+    //loeche ein Bild anhand seiner ID
+    @DeleteMapping("/delete/{imageId}")
+    public ResponseEntity<?> deleteImageById(@PathVariable int imageId) {
+        System.out.println("Deleting image with ID: " + imageId);
+        String imageUrl=imageService.getImageUrl(imageId);
+        System.out.println("Deleting image with URL: " + imageUrl);
+        try {
+            imageService.deleteImageById(imageId);
+            return ResponseEntity.ok().body("Image deleted successfully");
+        } catch (Exception e) {
+            logger.error("Error deleting image: {}", imageId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while deleting image: " + e.getMessage());
         }
     }
 }
