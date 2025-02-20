@@ -30,7 +30,7 @@ public class NoteService {
 
     /**
      * Erstellt eine neue Notiz und speichert sie in der Datenbank.
-     * 
+     *
      * @param note die zu speichernde Notiz.
      * @return die gespeicherte Notiz.
      */
@@ -51,12 +51,12 @@ public class NoteService {
     }
     /**
      * Holt eine Notiz aus der Datenbank basierend auf der angegebenen ID.
-     * 
+     *
      * @param id die ID der Notiz.
      * @return die Notiz, die der angegebenen ID entspricht, oder null, wenn keine Notiz gefunden wird.
      */
     public Note getNoteById(int id) {
-        return noteRepository.findById(id).orElse(null);
+        return noteRepository.getNoteById(id).orElse(null);
     }
 
     public List<Note> getNotesByUserId(int id) {
@@ -87,5 +87,13 @@ public class NoteService {
 
     public List<Note> searchNotes(String searchTerm, String username) {
         return noteRepository.findByContentContainingAndUserUsername(searchTerm, username);
+    }
+
+    public Note updateNote(Note existingNote) {
+        return noteRepository.save(existingNote);
+    }
+
+    public void save(Note note) {
+        noteRepository.save(note);
     }
 }
