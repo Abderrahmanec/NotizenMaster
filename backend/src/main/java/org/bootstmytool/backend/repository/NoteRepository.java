@@ -1,5 +1,6 @@
 package org.bootstmytool.backend.repository;
 
+import org.bootstmytool.backend.model.Image;
 import org.bootstmytool.backend.model.Note;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -32,5 +33,10 @@ public interface NoteRepository extends JpaRepository<Note, Integer> { // ID ist
     List<Note> findByUserId(int id);
 
     List<Note> findByContentContainingAndUserUsername(String title, String content);
+
+    Optional<Note> getNoteById(int noteId);
+
+    List<Note> findByImagesContaining(Image image);
+
 }
 
