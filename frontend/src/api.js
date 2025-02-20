@@ -199,7 +199,7 @@ console.log("Fetched Note url: "+response.data.url);
 };
 
 // Beispiel: PUT-Anfrage zum Aktualisieren einer Notiz
-export const updateNote = async (noteId, noteData, imageFile) => {
+export const updateNote = async (noteId, noteData) => {
   try {
     const formData = new FormData();
 
@@ -207,10 +207,7 @@ export const updateNote = async (noteId, noteData, imageFile) => {
     formData.append("note", JSON.stringify(noteData));
 
     // Append image file if exists
-    if (imageFile) {
-      formData.append("image", imageFile);
-    }
-
+    
     const response = await api.put(`/notes/editdeep/${noteId}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -244,5 +241,30 @@ export const deleteImage = async (imageId) => {
 
   } catch (error) {
     console.error("Error deleting image:", error);
+  }
+};
+
+
+
+ export const handleImageUpload = async (noteId, file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+ console.log("Requesting image upload from editNote...");
+
+  try {
+    const response = await fetch(`http://localhost:8080/image/${noteId}/images`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Image added successfully:', data);
+      // You can now display the image preview or update the note UI
+    } else {
+      console.error('Failed to upload image');
+    }
+  } catch (error) {
+    console.error('Error uploading image:', error);
   }
 };

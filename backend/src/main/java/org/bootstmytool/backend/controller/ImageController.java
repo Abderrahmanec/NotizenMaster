@@ -10,8 +10,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
@@ -65,7 +67,7 @@ public class ImageController {
     @GetMapping("/note/{noteId}")
     public ResponseEntity<?> getImagesByNoteId(@PathVariable int noteId) {
         logger.info("Fetching images for note ID: {}", noteId);
-
+                System.out.println("Fetching images for note ID: "+noteId);
         try {
             List<Image> images = imageService.getImagesByNoteId(noteId);
             if (images == null || images.isEmpty()) {
@@ -74,14 +76,13 @@ public class ImageController {
             }
 
             List<ImageDTO> imageDTOs = images.stream()
-                    .map(image -> new ImageDTO(baseUrl + "/image/" + image.getUrl()))
+                    .map(image -> new ImageDTO(image.getId(),baseUrl + "/image/" + image.getUrl()))
                     .toList();
-            logger.info("Found {} images for note ID: {}", imageDTOs.size(), noteId);
+
             return ResponseEntity.ok(imageDTOs);
         } catch (Exception e) {
-            logger.error("Error fetching images for note ID: {}", noteId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while retrieving images: " + e.getMessage());
+                    .body("Fehler : " + e.getMessage());
         }
     }
 
@@ -125,6 +126,33 @@ public class ImageController {
             logger.error("Error deleting image: {}", imageId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while deleting image: " + e.getMessage());
+        }
+    }
+
+
+
+
+
+    @PostMapping(value="/{noteId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ImageDTO> addImageToNote(
+            @PathVariable("noteId") int noteId,
+            @RequestParam("image") MultipartFile image
+    ) {
+        System.out.println("Adding image to note with ID: " + noteId);
+        System.out.println("The request is from EditNote");
+        try {
+            // Validate image type and size (if needed)
+            if (image.isEmpty()) {
+                return ResponseEntity.badRequest().body(null);
+            }
+
+            // Call service to upload image and associate it with the note
+            ImageDTO imageDTO = imageService.uploadImage(noteId, image);
+
+            // Return the image's data (ID, URL, etc.)
+            return ResponseEntity.status(HttpStatus.CREATED).body(imageDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 }

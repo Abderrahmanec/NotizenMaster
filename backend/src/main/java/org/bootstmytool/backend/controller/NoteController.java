@@ -281,13 +281,7 @@ public class NoteController {
 
 
 
-    @GetMapping("/edit/{id}")
-    public ResponseEntity<?> getNoteById(@PathVariable("id") int id) {
-        Note note = noteService.getNoteById(id);
 
-        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        return ResponseEntity.ok(convertToDto(note));
-    }
 
 
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"; // Importieren von React und Hooks für den State und Effekte
 import { useParams, useNavigate } from "react-router-dom"; // Importieren von Hooks zum Arbeiten mit Routen-Parametern und Navigation
-import { getNoteById, updateNote, fetchImagesForNote, deleteImage } from "../../api"; // Importieren der API-Funktionen zum Abrufen, Aktualisieren und Löschen von Notizen und Bildern
+import { getNoteById, updateNote, fetchImagesForNote, deleteImage, handleImageUpload} from "../../api"; // Importieren der API-Funktionen zum Abrufen, Aktualisieren und Löschen von Notizen und Bildern
 import { TextField, Button, Card, CardContent, Typography, CircularProgress, Box, Grid, IconButton } from "@mui/material"; // Importieren der Material UI-Komponenten
 import { Delete as DeleteIcon } from "@mui/icons-material"; // Importieren des Delete-Icons von Material UI
 
@@ -89,13 +89,26 @@ const EditNote = () => {
       
       };
 
-      const response = await updateNote(id, updatedData, newImage);
+      const response = await updateNote(id, updatedData);;
 
       // Lade die aktualisierte Notiz in den State
       setNote({
         ...response,
         images: response.images || []
       });
+
+
+      if (newImage) {
+        try {
+          const imageResponse = await handleImageUpload(id, newImage.file);
+          console.log('Image uploaded successfully:', imageResponse);
+        } catch (error) {
+          console.error('Image upload failed:', error);
+        }
+      }
+  
+         
+
 
       navigate("/"); // Zurück zur Hauptseite nach erfolgreicher Aktualisierung
     } catch (error) {

@@ -1,6 +1,7 @@
 package org.bootstmytool.backend.service;
 
 import jakarta.transaction.Transactional;
+import org.bootstmytool.backend.dto.ImageDTO;
 import org.bootstmytool.backend.model.Image;
 import org.bootstmytool.backend.model.Note;
 import org.bootstmytool.backend.repository.ImageRepository;
@@ -117,6 +118,31 @@ public boolean deleteImageById(int imgId) {
     }
 
 
+    public ImageDTO uploadImage(int noteId, MultipartFile image) {
+        // Save the image to the file system
+        String imagePath = saveImage(image);
 
+        // Create a new Image entity
+        Image img = new Image();
+        img.setUrl(imagePath);
 
+        // Save the Image entity to the database
+        img = imageRepository.save(img);
+
+        // Find the Note entity by its ID
+        Note note = noteRepository.findById(noteId).orElse(null);
+        if (note == null) {
+            throw new RuntimeException("Note not found");
+        }
+
+        // Add the Image entity to the Note entity
+        note.getImages().add(img);
+        noteRepository.save(note);
+
+        // Create and return an ImageDTO object
+        ImageDTO imgDTO = new ImageDTO();
+        imgDTO.setId(img.getId());
+        imgDTO.setUrl(img.getUrl());
+        return imgDTO;
+    }
 }
