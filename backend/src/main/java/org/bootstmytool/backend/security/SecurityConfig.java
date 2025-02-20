@@ -4,6 +4,7 @@ import org.bootstmytool.backend.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.firewall.DefaultHttpFirewall;
+import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -90,14 +93,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // Deaktiviert CSRF-Schutz
-            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Aktiviert CORS
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/auth/**").permitAll() // Authentifizierung wird für Auth-Endpunkte nicht verlangt
-                    .requestMatchers("/actuator/**").permitAll() // Erlaubt den Zugriff auf Actuator-Endpunkte
-                     .requestMatchers("/image/**").permitAll() // Erlaubt den Zugriff auf Benutzer
-                    .anyRequest().authenticated() // Alle anderen Anfragen erfordern Authentifizierung
-            )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless-Session
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Aktiviert CORS
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Erlaubt OPTIONS-Anfragen
+                        .requestMatchers("/api/auth/**").permitAll() // Authentifizierung wird für Auth-Endpunkte nicht verlangt
+                        .requestMatchers("/actuator/**").permitAll() // Erlaubt den Zugriff auf Actuator-Endpunkte
+                        .requestMatchers("/images/**").permitAll() //Erstellt eine neue Notiz.requestMatchers("/image/**").permitAll() // Erlaubt den Zugriff auf Benutzer
+                        .requestMatchers("/image/**").permitAll() //Erstellt eine neue Notiz.requestMatchers("/image/**").permitAll() // Erlaubt den Zugriff auf Benutzer
+                        .anyRequest().authenticated() // Alle anderen Anfragen erfordern Authentifizierung
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless-Session
 
         // Fügt den JWT-Filter hinzu
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -116,11 +121,17 @@ public class SecurityConfig {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:3000","http://localhost:3001", "http://192.168.178.144:3000")); // Frontend-URLs erlauben
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE","OPTIONS")); // Erlaubte HTTP-Methoden
-        corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type")); // Erlaubte Header
+        corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With")); // Erlaubte Header
         corsConfiguration.setAllowCredentials(true); // Erlaubt Cookies und Authentifizierung
         // Registrierung der CORS-Konfiguration für alle Endpunkte
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
         return source;
+    }
+
+
+    @Bean
+    public HttpFirewall allowDoubleSlashFirewall() {
+        return new DefaultHttpFirewall(); // DefaultHttpFirewall allows double slashes
     }
 }
