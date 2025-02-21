@@ -13,7 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,18 +87,31 @@ public boolean deleteImageById(int imgId) {
 
 
 //speichert ein Image Objekt in der Datenbank
-    public String saveImage(MultipartFile file) {
-        // Save the image to the file system
-        String imagePath = "images/" + file.getOriginalFilename();
-        File imageFile = new File(imagePath);
-        try {
-            file.transferTo(imageFile);
-        } catch (Exception e) {
-            e.printStackTrace();
+public String saveImage(MultipartFile file) {
+    try {
+        // Define external upload directory
+        Path uploadDir = Paths.get("static/images/");
+
+        // Ensure directory exists
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
         }
 
-        return imagePath;
+        // Generate a safe, unique filename
+        String fileName = System.currentTimeMillis() + "_" +
+                file.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_");
+        Path targetPath = uploadDir.resolve(fileName);
+
+        // Save the file
+        file.transferTo(targetPath.toFile());
+
+        // Return relative path for serving via HTTP
+        return "/static/images/" + fileName;
+    } catch (Exception e) {
+        e.printStackTrace();
+        throw new RuntimeException("Error saving image.");
     }
+}
 
 
     //gibt Resource Objekt zurueck
@@ -119,30 +137,26 @@ public boolean deleteImageById(int imgId) {
 
 
     public ImageDTO uploadImage(int noteId, MultipartFile image) {
-        // Save the image to the file system
-        String imagePath = saveImage(image);
+        // Save the image and get the relative path
+        String imageUrl = saveImage(image);
 
-        // Create a new Image entity
+        // Create and save Image entity
         Image img = new Image();
-        img.setUrl(imagePath);
-
-        // Save the Image entity to the database
+        img.setUrl(imageUrl); // Store relative path
         img = imageRepository.save(img);
 
-        // Find the Note entity by its ID
-        Note note = noteRepository.findById(noteId).orElse(null);
-        if (note == null) {
-            throw new RuntimeException("Note not found");
-        }
+        // Find the Note entity
+        Note note = noteRepository.findById(noteId).orElseThrow(() -> new RuntimeException("Note not found"));
 
-        // Add the Image entity to the Note entity
+        // Associate image with note
         note.getImages().add(img);
         noteRepository.save(note);
 
-        // Create and return an ImageDTO object
+        // Convert to DTO and return
         ImageDTO imgDTO = new ImageDTO();
         imgDTO.setId(img.getId());
         imgDTO.setUrl(img.getUrl());
         return imgDTO;
     }
+
 }

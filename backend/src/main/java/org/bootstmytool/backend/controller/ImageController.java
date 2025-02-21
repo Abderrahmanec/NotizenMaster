@@ -139,20 +139,19 @@ public class ImageController {
             @RequestParam("image") MultipartFile image
     ) {
         System.out.println("Adding image to note with ID: " + noteId);
-        System.out.println("The request is from EditNote");
+
+        if (image.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
         try {
-            // Validate image type and size (if needed)
-            if (image.isEmpty()) {
-                return ResponseEntity.badRequest().body(null);
-            }
-
-            // Call service to upload image and associate it with the note
+            // Upload the image and associate with note
             ImageDTO imageDTO = imageService.uploadImage(noteId, image);
-
-            // Return the image's data (ID, URL, etc.)
             return ResponseEntity.status(HttpStatus.CREATED).body(imageDTO);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
 }
