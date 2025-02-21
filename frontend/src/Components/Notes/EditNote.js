@@ -84,32 +84,20 @@ const EditNote = () => {
 
   //handelt upload an image
   const handleUploadImages = async () => {
-    if (!newImages.length) return;
+    const formData = new FormData();
+    newImages.forEach((img) => {
+      formData.append("image", img.file); // Keep using "image" but allow multiple
+    });
 
-    setProcessing(true);
     try {
-      const formData = new FormData();
-      newImages.forEach((img) => {
-        formData.append(`images`, img.file);
-      });
-
-      const uploadedImages = await handleImageUpload(id, formData);
-
-      if (!Array.isArray(uploadedImages)) {
-        throw new Error("Invalid response: Expected an array of images.");
-      }
-
-      setNote(prev => ({
-        ...prev,
-        images: [...prev.images, ...uploadedImages]
-      }));
-      setNewImages([]);
+      await handleImageUpload(id, formData);
     } catch (error) {
       setError("Fehler beim Hochladen der Bilder.");
     } finally {
       setProcessing(false);
     }
   };
+
 
 
 
@@ -128,7 +116,7 @@ const EditNote = () => {
 
       // hier wird geprüft, ob neue Bilder hochgeladen werden sollen
       if (newImages.length > 0) {
-        await handleUploadImages()
+        await handleUploadImages();
       }
 
       await updateNote(id, updatedData);
@@ -136,22 +124,12 @@ const EditNote = () => {
 
 
 
-
-      // if (newImage) {
-      //   try {
-      //     const imageResponse = await handleImageUpload(id, newImage.file);
-      //     console.log('Image uploaded successfully:', imageResponse);
-      //   } catch (error) {
-      //     console.error('Image upload failed:', error);
-      //   }
-      // }
-  
-         
-
-
       navigate("/"); // Zurück zur Hauptseite nach erfolgreicher Aktualisierung
     } catch (error) {
       setError("Fehler beim Aktualisieren der Notiz. Bitte versuchen Sie es erneut."); // Fehlerbehandlung
+    }
+    finally {
+      setProcessing(false); // Ladeanzeige beenden
     }
   };
 
@@ -256,14 +234,7 @@ const EditNote = () => {
                               </Typography>
                             </Grid>
                         ))}
-                        <Button
-                            variant="contained"
-                            onClick={handleUploadImages}
-                            disabled={processing}
-                            sx={{ mt: 1 }}
-                        >
-                          {processing ? <CircularProgress size={24} /> : 'Bilder hochladen'}
-                        </Button>
+
                       </Grid>
                     </Box>
                 )}
