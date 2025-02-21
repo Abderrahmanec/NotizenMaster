@@ -7,13 +7,12 @@ import { Delete as DeleteIcon } from "@mui/icons-material"; // Importieren des D
 const EditNote = () => {
   
   const [note, setNote] = useState({ title: "", content: "", tag: "", images: [] }); // State für die Notiz
-  const [newImage, setNewImage] = useState(null); // State für das neue Bild
+  const [newImages, setNewImages] = useState([]); // State für das neue Bild
   const [error, setError] = useState(null); // State für Fehlernachrichten
   const [loading, setLoading] = useState(true); // State für Ladeanzeige
   const { id } = useParams(); // Route-Parameter für die Notiz-ID
   const navigate = useNavigate(); // Hook zum Navigieren zwischen Seiten
-  const [deleting, setDeleting] = useState(false);// State für das Löschen der Notiz
- 
+  const [processing, setProcessing] = useState(false);
 
   // Abrufen der Notiz und der Bilder beim Laden der Seite
   useEffect(() => {
@@ -31,7 +30,7 @@ const EditNote = () => {
           images: fetchedImages || [], 
         });
       } catch (error) {
-        setError("Fehler beim Abrufen der Notiz. Bitte versuchen Sie es erneut."); // Fehlerbehandlung
+        setError("Fehler  beim Abrufen der Notiz. Bitte versuchen Sie es erneut."); // Fehlerbehandlung
       } finally {
         setLoading(false); // Ladeanzeige beenden
       }
@@ -50,37 +49,75 @@ const EditNote = () => {
 
   // Handler für Bildauswahl
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      // Erstellen eines neuen Bildobjekts
-      setNewImage({
-        file: file,
-        preview: URL.createObjectURL(file) // Vorschau des Bildes
-      });
-    } else {
-      setError("Bitte wählen Sie ein gültiges Bild aus."); // Fehlerbehandlung
+    const files = Array.from(e.target.files);
+    if (!files.every(file => file.type.startsWith('image/'))) {
+      return setError("Nur Bilddateien sind erlaubt.");
     }
+    const previewUrls = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+
+    setNewImages(prev => [...prev, ...previewUrls]);
+  };
+
+  //handelt delete new image
+  const handleDeleteNewImage = (index) => {
+    setNewImages(prev => prev.filter((_, i) => i !== index));
   };
 
   // Handler für das Löschen eines Bildes
-  const handleDeleteImage = async (imageId) => {
-    setDeleting(true); // Ladeanzeige für das Löschen anzeigen
+  const handleDeleteExistingImage = async (imageId) => {
+    setProcessing(true); // Ladeanzeige für das Löschen anzeigen
     try {
       await deleteImage(imageId); // Bild löschen
       setNote(prev =>({
         ...prev,
-        images: note.images.filter((image) => image.id !== imageId), // Bild aus dem State entfernen
+        images: prev.images.filter((image) => image.id !== imageId), // Bild aus dem State entfernen
       }));
     } catch (err) {
       setError("Fehler beim Löschen des Bildes. Bitte versuchen Sie es erneut."); // Fehlerbehandlung
     }finally {
-      setDeleting(false);
+      setProcessing(false);
     }
   };
+
+  //handelt upload an image
+  const handleUploadImages = async () => {
+    if (!newImages.length) return;
+
+    setProcessing(true);
+    try {
+      const formData = new FormData();
+      newImages.forEach((img) => {
+        formData.append(`images`, img.file);
+      });
+
+      const uploadedImages = await handleImageUpload(id, formData);
+
+      if (!Array.isArray(uploadedImages)) {
+        throw new Error("Invalid response: Expected an array of images.");
+      }
+
+      setNote(prev => ({
+        ...prev,
+        images: [...prev.images, ...uploadedImages]
+      }));
+      setNewImages([]);
+    } catch (error) {
+      setError("Fehler beim Hochladen der Bilder.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+
+
 
   // Formularübermittlung für das Aktualisieren der Notiz
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setProcessing(true); // Ladeanzeige für das Aktualisieren anzeigen
     try {
       const updatedData = {
         title: note.title,
@@ -89,23 +126,25 @@ const EditNote = () => {
       
       };
 
-      const response = await updateNote(id, updatedData);;
-
-      // Lade die aktualisierte Notiz in den State
-      setNote({
-        ...response,
-        images: response.images || []
-      });
-
-
-      if (newImage) {
-        try {
-          const imageResponse = await handleImageUpload(id, newImage.file);
-          console.log('Image uploaded successfully:', imageResponse);
-        } catch (error) {
-          console.error('Image upload failed:', error);
-        }
+      // hier wird geprüft, ob neue Bilder hochgeladen werden sollen
+      if (newImages.length > 0) {
+        await handleUploadImages()
       }
+
+      await updateNote(id, updatedData);
+
+
+
+
+
+      // if (newImage) {
+      //   try {
+      //     const imageResponse = await handleImageUpload(id, newImage.file);
+      //     console.log('Image uploaded successfully:', imageResponse);
+      //   } catch (error) {
+      //     console.error('Image upload failed:', error);
+      //   }
+      // }
   
          
 
@@ -171,35 +210,63 @@ const EditNote = () => {
                 />
               </Grid>
 
-              {/* Bild hochladen */}
+              {/* Bild auswählen */}
               <Grid item xs={12}>
                 <Button variant="contained" component="label">
-                   Bild hochladen
+                   Bild auswählen
                   <input
                     type="file"
                     hidden
+                    multiple
                     onChange={handleImageChange}
                     accept="image/*"
                   />
                 </Button>
-                {newImage && newImage.preview && (
-                  <Box sx={{ mb: 3 }}>
-                    <img
-                      src={newImage.preview}
-                      alt="Preview"
-                      style={{
-                        width: '100%',
-                        height: '200px',
-                        objectFit: 'cover',
-                        borderRadius: '4px',
-                      }}
-                    />
-                    <Typography variant="body2" sx={{ mt: 2 }}>
-                      Ausgewählt: {newImage.file.name}
-                    </Typography>
-                  </Box>
-                )}
 
+                {newImages.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle1">Neue Bilder:</Typography>
+                      <Grid container spacing={1}>
+                        {newImages.map((img, index) => (
+                            <Grid item key={index} xs={4}>
+                              <Box position="relative">
+                                <img
+                                    src={img.preview}
+                                    alt={`Vorschau ${index}`}
+                                    style={{
+                                      width: '100%',
+                                      height: '200px',
+                                      objectFit: 'cover',
+                                      borderRadius: '4px',
+
+                                    }}
+                                />
+                                <IconButton onClick={() => handleDeleteNewImage(index)} sx={{
+                                  position: 'absolute',
+                                  top: 8,
+                                  right: 8,
+                                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                                }}>
+                                  <DeleteIcon />
+                                </IconButton>
+
+                              </Box>
+                              <Typography variant="caption">
+                                {img.file.name}
+                              </Typography>
+                            </Grid>
+                        ))}
+                        <Button
+                            variant="contained"
+                            onClick={handleUploadImages}
+                            disabled={processing}
+                            sx={{ mt: 1 }}
+                        >
+                          {processing ? <CircularProgress size={24} /> : 'Bilder hochladen'}
+                        </Button>
+                      </Grid>
+                    </Box>
+                )}
               </Grid>
 
               {/* Bereits hochgeladene Bilder */}
@@ -214,11 +281,12 @@ const EditNote = () => {
                           alt={image.filename}
                           width="30%"
                           height="40%"
-                          style={{ borderRadius: 1, objectFit: "cover", border: "1px solid #ccc" , 
+                          style={{ borderRadius: 1, objectFit: "cover", border: "1px solid #ccc" ,
                             position: "relative",
                             mb:4
                           }}
                         />
+
 
                          <IconButton   sx={{
                                     position: 'relative',
@@ -226,8 +294,8 @@ const EditNote = () => {
                                     right: 8,
                                     backgroundColor: 'background.paper',
                                   }}
-                                  onClick={() => handleDeleteImage(image.id)}
-                                  disabled={deleting}
+                                  onClick={() => handleDeleteExistingImage(image.id)}
+                                  disabled={processing}
                                 >
                           <DeleteIcon /> {/* Bild löschen */}
                         </IconButton>
@@ -250,9 +318,9 @@ const EditNote = () => {
                 <Button
                   type="submit"
                   variant="contained"
-                  disabled={deleting}
+                  disabled={processing}
                 >
-                  {deleting ? <CircularProgress size={24} /> : 'Aktualisieren'}
+                  {processing ? <CircularProgress size={24} /> : 'Aktualisieren'}
                 </Button>
               </Grid>
             </Grid>
