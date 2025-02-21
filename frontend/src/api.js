@@ -246,9 +246,8 @@ export const deleteImage = async (imageId) => {
 
 
 
- export const handleImageUpload = async (noteId, file) => {
-  const formData = new FormData();
-  formData.append('image', file);
+ export const handleImageUpload = async (noteId, formData) => {
+
  console.log("Requesting image upload from editNote...");
 
   try {
