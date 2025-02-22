@@ -19,6 +19,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Der ImageController ist ein REST-Controller, der Endpunkte für den Zugriff auf Bilder bereitstellt.
@@ -120,8 +121,13 @@ public class ImageController {
         String imageUrl=imageService.getImageUrl(imageId);
         System.out.println("Deleting image with URL: " + imageUrl);
         try {
+            if (imageUrl == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "Bild nicht gefunden"));
+            }
+
             imageService.deleteImageById(imageId);
-            return ResponseEntity.ok().body("Image deleted successfully");
+            return ResponseEntity.ok(Map.of("message", "Image deleted successfully"));
         } catch (Exception e) {
             logger.error("Error deleting image: {}", imageId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
