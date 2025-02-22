@@ -7,6 +7,7 @@ import org.bootstmytool.backend.model.Note;
 import org.bootstmytool.backend.repository.ImageRepository;
 import org.bootstmytool.backend.repository.NoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -75,7 +76,7 @@ public boolean deleteImageById(int imgId) {
 
 
         // Delete entry from database
-        imageRepository.deleteById(imgId);;
+        imageRepository.deleteById(imgId);
 
         return true;
     } else {
@@ -85,31 +86,33 @@ public boolean deleteImageById(int imgId) {
 }
 
 
-
+    @Value("${image.upload.dir}")
+    private String imageUploadDir;
 //speichert ein Image Objekt in der Datenbank
-public String saveImage(MultipartFile file) {
+private Image processImage(MultipartFile file) {
     try {
-        // Define external upload directory
-        Path uploadDir = Paths.get("static/images/");
-
-        // Ensure directory exists
-        if (!Files.exists(uploadDir)) {
-            Files.createDirectories(uploadDir);
+        // Create directory if it doesn't exist
+        Path imagePath = Path.of(imageUploadDir);
+        if (!Files.exists(imagePath)) {
+            Files.createDirectories(imagePath);
         }
 
-        // Generate a safe, unique filename
-        String fileName = System.currentTimeMillis() + "_" +
-                file.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_");
-        Path targetPath = uploadDir.resolve(fileName);
+        //erstelle einen eindeutigen Bildnamen
+        //  String imageName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String imageName = System.currentTimeMillis() + "_" + file.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_");
+        Path targetPath = imagePath.resolve(imageName);
 
-        // Save the file
-        file.transferTo(targetPath.toFile());
+        // speichere das Bild im Dateisystem
+        Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-        // Return relative path for serving via HTTP
-        return "/static/images/" + fileName;
-    } catch (Exception e) {
-        e.printStackTrace();
-        throw new RuntimeException("Error saving image.");
+        // erstelle ein Image-Objekt und setze die Bilddaten
+        Image image = new Image();
+        image.setData(file.getBytes());
+        image.setUrl(imageName);  // Store only the image name
+        return image;
+    } catch (IOException e) {
+        //logger.warn("Error processing image {}: {}", file.getOriginalFilename(), e.getMessage());
+        throw new RuntimeException("Error processing image.");
     }
 }
 
@@ -136,27 +139,21 @@ public String saveImage(MultipartFile file) {
     }
 
 
-    public ImageDTO uploadImage(int noteId, MultipartFile image) {
+    public Image uploadImage(int noteId, MultipartFile file) {
         // Save the image and get the relative path
-        String imageUrl = saveImage(image);
+
 
         // Create and save Image entity
-        Image img = new Image();
-        img.setUrl(imageUrl); // Store relative path
-        img = imageRepository.save(img);
 
-        // Find the Note entity
+     // Find the Note entity
         Note note = noteRepository.findById(noteId).orElseThrow(() -> new RuntimeException("Note not found"));
-
-        // Associate image with note
-        note.getImages().add(img);
+        Image image = processImage(file);
+       // Associate image with note
+        note.getImages().add(image);
+        image.setNote(note);
         noteRepository.save(note);
 
-        // Convert to DTO and return
-        ImageDTO imgDTO = new ImageDTO();
-        imgDTO.setId(img.getId());
-        imgDTO.setUrl(img.getUrl());
-        return imgDTO;
+        return image;
     }
 
 }

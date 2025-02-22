@@ -73,7 +73,7 @@ public class ImageController {
             List<Image> images = imageService.getImagesByNoteId(noteId);
             if (images == null || images.isEmpty()) {
                 logger.warn("No images found for note ID: {}", noteId);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No images found for note ID: " + noteId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Notiz hat keine Bilder: " + noteId);
             }
 
             List<ImageDTO> imageDTOs = images.stream()
@@ -140,7 +140,7 @@ public class ImageController {
 
 
     @PostMapping(value="/{noteId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ImageDTO> addImageToNote(
+    public ResponseEntity<Image> addImageToNote(
             @PathVariable("noteId") int noteId,
             @RequestParam("image") MultipartFile image
     ) {
@@ -152,8 +152,8 @@ public class ImageController {
 
         try {
             // Upload the image and associate with note
-            ImageDTO imageDTO = imageService.uploadImage(noteId, image);
-            return ResponseEntity.status(HttpStatus.CREATED).body(imageDTO);
+            Image img = imageService.uploadImage(noteId, image);
+            return ResponseEntity.status(HttpStatus.CREATED).body(img);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);

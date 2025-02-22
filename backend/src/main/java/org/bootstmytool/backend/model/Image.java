@@ -3,6 +3,9 @@ package org.bootstmytool.backend.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Die Image-Klasse stellt ein Bild dar, das mit einer Notiz verknüpft ist.
  * Das Bild wird in der Datenbank als Blob gespeichert und kann mit einer Notiz in einer "Viele-zu-Eins"-Beziehung verbunden werden.
@@ -34,6 +37,17 @@ public class Image {
      */
     public Image() {
         this.createdDate = java.time.LocalDateTime.now();
+    }
+
+    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Image> images = new ArrayList<>();
+
+    public List<Image> getImages() {
+        return images;
+    }
+
+    public void setImages(List<Image> images) {
+        this.images = images;
     }
 
     /**
