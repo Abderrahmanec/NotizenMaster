@@ -137,7 +137,7 @@ export const registerUser = async (userData) => {
 // Neue Notiz erstellen
 export const createNote = async (formData, token) => {
   try {
-    const response = await fetch("http://localhost:8080/notes", {
+    const response = await fetch("http://localhost:8080/notes/create", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -208,7 +208,7 @@ export const updateNote = async (noteId, noteData) => {
 
     // Append image file if exists
     
-    const response = await api.put(`/notes/editdeep/${noteId}`, formData, {
+    const response = await api.put(`/notes/edit/${noteId}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
