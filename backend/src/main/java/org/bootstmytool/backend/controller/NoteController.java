@@ -74,7 +74,7 @@ public class NoteController {
      * @param images Optional, Bilder, die mit der Notiz verknüpft werden
      * @return ResponseEntity mit dem Ergebnis der Notizerstellung
      */
-    @PostMapping(value = "create",consumes = "multipart/form-data")
+    @PostMapping(value = "/create",consumes = "multipart/form-data")
     public ResponseEntity<?> createNote(
             @RequestHeader("Authorization") String authHeader,
             @RequestParam("title") String title,
