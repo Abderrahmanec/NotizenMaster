@@ -39,17 +39,6 @@ public class Image {
         this.createdDate = java.time.LocalDateTime.now();
     }
 
-    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Image> images = new ArrayList<>();
-
-    public List<Image> getImages() {
-        return images;
-    }
-
-    public void setImages(List<Image> images) {
-        this.images = images;
-    }
-
     /**
      * Gibt die ID des Bildes zurück.
      *
