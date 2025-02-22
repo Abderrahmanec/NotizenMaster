@@ -137,7 +137,7 @@ export const registerUser = async (userData) => {
 // Neue Notiz erstellen
 export const createNote = async (formData, token) => {
   try {
-    const response = await fetch("http://localhost:8080/notes/create", {
+    const response = await fetch("http://localhost:8080/notes", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -202,16 +202,15 @@ console.log("Fetched Note url: "+response.data.url);
 export const updateNote = async (noteId, noteData) => {
   try {
     const formData = new FormData();
-    formData.append("title", noteData.title);
-    formData.append("content", noteData.content);
-    formData.append("tag", noteData.tag);
 
+    // Append note data as JSON string
+    formData.append("note", JSON.stringify(noteData));
 
     // Append image file if exists
     
-    const response = await api.put(`/notes/edit/${noteId}`, formData, {
+    const response = await api.put(`/notes/editdeep/${noteId}`, formData, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "multipart/form-data",
       },
     });
 
@@ -237,8 +236,8 @@ export const deleteImage = async (imageId) => {
       throw new Error("Failed to delete image");
     }
 
-    const message = await response.text();
-    return message;
+    const data = await response.json();
+    return data;
 
   } catch (error) {
     console.error("Error deleting image:", error);
