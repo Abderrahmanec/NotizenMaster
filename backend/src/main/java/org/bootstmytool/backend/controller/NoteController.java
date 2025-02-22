@@ -74,7 +74,7 @@ public class NoteController {
      * @param images Optional, Bilder, die mit der Notiz verknüpft werden
      * @return ResponseEntity mit dem Ergebnis der Notizerstellung
      */
-    @PostMapping(consumes = "multipart/form-data")
+    @PostMapping(value = "create",consumes = "multipart/form-data")
     public ResponseEntity<?> createNote(
             @RequestHeader("Authorization") String authHeader,
             @RequestParam("title") String title,
@@ -282,93 +282,7 @@ public class NoteController {
 
 
 
-
-
-
-
-
-    /**
-     * Endpunkt zum Bearbeiten einer Notiz anhand ihrer ID.
-     * Der Benutzer muss authentifiziert sein, um eine Notiz zu bearbeiten.
-     *
-     * @param id Die ID der zu bearbeitenden Notiz
-     * @return ResponseEntity mit der aktualisierten Notiz
-     */
-    @PutMapping(value = "/edites/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> editNote1(
-            @PathVariable("id") int id,
-            @RequestPart("note") String noteJson,
-            @RequestPart(value = "images", required = false) MultipartFile[] newImages,
-            @RequestHeader("Authorization") String authHeader) {
-
-        try {
-            // Validate authorization
-            User user = validateAuthorization(authHeader);
-
-            // Get existing note
-            Note existingNote = noteService.getNoteById(id);
-
-            // Check ownership
-            if (existingNote.getUser().getId() != user.getId()) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("You don't have permission to edit this note");
-            }
-
-            // Convert JSON to NoteDTO
-            ObjectMapper objectMapper = new ObjectMapper();
-            NoteDTO noteUpdates = objectMapper.readValue(noteJson, NoteDTO.class);
-
-            // Update note fields
-            existingNote.setTitle(noteUpdates.getTitle());
-            existingNote.setContent(noteUpdates.getContent());
-            existingNote.setTags(noteUpdates.getTags());
-
-            // Initialize images list if it's null
-            if (existingNote.getImages() == null) {
-                existingNote.setImages(new ArrayList<>());
-            }
-
-            // Handle image deletion if provided in NoteDTO (assuming you add a field for that)
-            if (noteUpdates.getImagesToDelete() != null && !noteUpdates.getImagesToDelete().isEmpty()) {
-                existingNote.setImages(existingNote.getImages().stream()
-                        .filter(image -> !noteUpdates.getImagesToDelete().contains(image.getId()))
-                        .collect(Collectors.toList()));
-            }
-
-            // Handle new images addition
-            if (newImages != null && newImages.length > 0) {
-                List<Image> processedImages = Arrays.stream(newImages)
-                        .map(file -> {
-                            Image img = processImage(file);
-                            // IMPORTANT: set the note reference on the image if needed.
-                            img.setNote(existingNote);
-                            return img;
-                        })
-                        .collect(Collectors.toList());
-                existingNote.getImages().addAll(processedImages);
-            }
-
-            // Save updated note
-            Note updatedNote = noteService.updateNote(existingNote);
-
-            // Convert to DTO for response
-            NoteDTO responseDto = convertToDto(updatedNote);
-
-            return ResponseEntity.ok(responseDto);
-
-        } catch (JsonProcessingException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid note format");
-        } catch (ResponseStatusException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
-        } catch (Exception e) {
-            logger.error("Error updating note: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error updating note: " + e.getMessage());
-        }
-    }
-
-
-    // Add this helper method
+    // Diese Methode konvertiert ein Note-Objekt in ein NoteDTO-Objekt
     private NoteDTO convertToDto(Note note) {
         NoteDTO dto = new NoteDTO();
         dto.setId(note.getId());
@@ -410,88 +324,12 @@ public class NoteController {
 
 
 
-
-    @PutMapping(value = "/edited/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> editNote12(
-            @PathVariable("id") int id,
-            @RequestPart("note") String noteJson,
-            @RequestPart(value = "images", required = false) MultipartFile[] newImages,
-            @RequestHeader("Authorization") String authHeader) {
-
-        try {
-            // Validate authorization
-            User user = validateAuthorization(authHeader);
-
-            // Get existing note
-            Note existingNote = noteService.getNoteById(id);
-            if (existingNote == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Note not found");
-            }
-
-            // pruefen ob der Benutzer die Notiz besitzt
-            if (existingNote.getUser().getId() != user.getId()) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("You don't have permission to edit this note");
-            }
-
-            // Convert JSON zu NoteDTO
-            ObjectMapper objectMapper = new ObjectMapper();
-            NoteDTO noteUpdates = objectMapper.readValue(noteJson, NoteDTO.class);
-
-            // aktualisiere Notizfelder
-            existingNote.setTitle(noteUpdates.getTitle());
-            existingNote.setContent(noteUpdates.getContent());
-            existingNote.setTags(noteUpdates.getTags());
-
-            // Handelt das Loeschen von Bildern, wenn sie in NoteDTO angegeben sind
-            if (noteUpdates.getImagesToDelete() != null && !noteUpdates.getImagesToDelete().isEmpty()) {
-                List<Image> imagesToDelete = existingNote.getImages().stream()
-                        .filter(image -> noteUpdates.getImagesToDelete().contains(image.getId()))
-                        .collect(Collectors.toList());
-
-                for (Image image : imagesToDelete) {
-                    // Delete image from storage
-                    Files.deleteIfExists(Path.of("backend/src/main/resources/static/images/" + image.getUrl()));
-                    // Remove image from note
-                    existingNote.getImages().remove(image);
-                    imageRepository.delete(image);
-                }
-            }
-
-            // Handlt neue Bilder hinzufuegen
-            if (newImages != null && newImages.length > 0) {
-                for (MultipartFile file : newImages) {
-                    Image newImage = processImage(file);
-                    newImage.setNote(existingNote); // Set the note reference
-                    existingNote.getImages().add(newImage);
-                }
-            }
-
-            // speichere aktualisierte Notiz
-            Note updatedNote = noteService.updateNote(existingNote);
-
-            // konvertiere zu DTO fuer die Antwort
-            NoteDTO responseDto = convertToDto(updatedNote);
-
-            return ResponseEntity.ok(responseDto);
-
-        } catch (JsonProcessingException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid note format");
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error processing images: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error updating note: " + e.getMessage());
-        }
-    }
-
     //get note by id and his images if exists
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getNoteByIdWithImages(@PathVariable("id") int id) {
         Note note = noteService.getNoteById(id);
         if (note == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Note not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nicht gefunden");
         }
 
         NoteDTO noteDTO = convertToDto(note);
@@ -501,14 +339,10 @@ public class NoteController {
 
 
 
-
-
-
-    @PutMapping(value = "/editdeep/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> editNote(
+    @PutMapping(value = "/edit/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> editNoteWithoutImag(
             @PathVariable("id") int id,
-            @RequestPart("note") String noteJson,
-            @RequestPart(value = "images", required = false) MultipartFile[] newImages,
+            @RequestBody NoteDTO noteUpdates,  // Changed to @RequestBody instead of @RequestPart
             @RequestHeader("Authorization") String authHeader) {
 
         try {
@@ -527,40 +361,10 @@ public class NoteController {
                         .body("You don't have permission to edit this note");
             }
 
-            // Convert JSON to NoteDTO
-            ObjectMapper objectMapper = new ObjectMapper();
-            NoteDTO noteUpdates = objectMapper.readValue(noteJson, NoteDTO.class);
-
             // Update note fields
             existingNote.setTitle(noteUpdates.getTitle());
             existingNote.setContent(noteUpdates.getContent());
             existingNote.setTags(noteUpdates.getTags());
-
-            // Handle image deletion (if imagesToDelete is provided in NoteDTO)
-            if (noteUpdates.getImagesToDelete() != null && !noteUpdates.getImagesToDelete().isEmpty()) {
-                List<Image> imagesToDelete = existingNote.getImages().stream()
-                        .filter(image -> noteUpdates.getImagesToDelete().contains(image.getId()))
-                        .collect(Collectors.toList());
-
-                for (Image image : imagesToDelete) {
-                    // Delete image from storage
-                    Files.deleteIfExists(Path.of("backend/src/main/resources/static/images/" + image.getUrl()));
-                    // Remove image from note
-                    existingNote.getImages().remove(image);
-                    imageRepository.delete(image);
-                }
-            }
-
-            // Handle new image uploads
-            if (newImages != null && newImages.length > 0) {
-                for (MultipartFile file : newImages) {
-                    if (!file.isEmpty()) {
-                        Image newImage = processImage(file);
-                        newImage.setNote(existingNote); // Set the note reference
-                        existingNote.getImages().add(newImage);
-                    }
-                }
-            }
 
             // Save updated note
             Note updatedNote = noteService.updateNote(existingNote);
@@ -570,14 +374,10 @@ public class NoteController {
 
             return ResponseEntity.ok(responseDto);
 
-        } catch (JsonProcessingException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid note format");
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error processing images: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error updating note: " + e.getMessage());
         }
     }
+
 }
