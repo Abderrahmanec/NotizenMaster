@@ -204,13 +204,15 @@ export const updateNote = async (noteId, noteData) => {
     const formData = new FormData();
 
     // Append note data as JSON string
-    formData.append("note", JSON.stringify(noteData));
+    formData.append("title", noteData.title);
+    formData.append("content", noteData.content);
+    formData.append("tag", noteData.tag);
 
     // Append image file if exists
     
     const response = await api.put(`/notes/edit/${noteId}`, formData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
 
