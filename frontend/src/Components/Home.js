@@ -1,9 +1,11 @@
- import React, { useState, useEffect } from "react";
-import { Typography, Button, CircularProgress } from "@mui/material";
+// Home.js
+
+import React, { useState, useEffect } from "react";
+import { Typography, Button, CircularProgress, Box, Grid } from "@mui/material";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
-import { deleteNote, searchNotes, getNotes } from "../api";
-import SearchBar from "./Notes/SearchBar";
+import { deleteNote, getNotes } from "../api";
+import SearchBar from "./Notes/SearchBar";  // SearchBar is imported
 import NoteList from "./Notes/NoteList";
 import UserProfile from './UserProfile'; // Import UserProfile
 
@@ -14,7 +16,7 @@ const Home = () => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [expandedNoteIds, setExpandedNoteIds] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");  // Track the search term
   const navigate = useNavigate();
 
   const checkTokenExpiration = (token) => {
@@ -30,11 +32,11 @@ const Home = () => {
       navigate("/login");
       return;
     }
-  
+
     try {
       const data = await getNotes(); // Use the getNotes function from api.js
       setNotes(data);
-      setFilteredNotes(data);
+      setFilteredNotes(data);  // Initialize with all notes
     } catch (error) {
       console.error("Error loading notes:", error);
       setError("There was an issue loading your notes.");
@@ -46,23 +48,6 @@ const Home = () => {
   useEffect(() => {
     fetchNotes();
   }, []);
-
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredNotes(notes);
-    } else {
-      const fetchSearchResults = async () => {
-        try {
-          const searchResults = await searchNotes(searchTerm);
-          setFilteredNotes(searchResults);
-        } catch (err) {
-          setError(err.message || "Failed to search for notes.");
-        }
-      };
-
-      fetchSearchResults();
-    }
-  }, [searchTerm, notes]);
 
   const handleDelete = async (noteId) => {
     try {
@@ -87,51 +72,78 @@ const Home = () => {
 
   const handleToggleContent = (noteId) => {
     setExpandedNoteIds((prevState) =>
-      prevState.includes(noteId)
-        ? prevState.filter((id) => id !== noteId)
-        : [...prevState, noteId]
+        prevState.includes(noteId)
+            ? prevState.filter((id) => id !== noteId)
+            : [...prevState, noteId]
     );
   };
+
+  // Filter notes based on searchTerm
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredNotes(notes); // If no search term, display all notes
+    } else {
+      const filtered = notes.filter((note) =>
+          note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          note.content.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredNotes(filtered); // Update filtered notes based on search term
+    }
+  }, [searchTerm, notes]);
 
   if (isLoading) return <div><CircularProgress /></div>;
 
   return (
-    <div style={{ padding: "20px" }}>
-      <Typography variant="h4" gutterBottom style={{ marginBottom: "20px" }}>
-        My Notes
-      </Typography>
-
-      {/* Render UserProfile at the top */}
-      <UserProfile /> {/* Display the user profile component */}
-
-      {/* Ensure SearchBar is only rendered once */}
-      {/*<SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />*/}
-
-      {successMessage && (
-        <Typography color="success" style={{ marginBottom: "20px" }}>
-          {successMessage}
+      <Box sx={{ padding: { xs: "10px", sm: "20px", md: "40px" } }}>
+        <Typography variant="h4" gutterBottom sx={{ marginBottom: "20px" }}>
+          My Notes
         </Typography>
-      )}
 
-      {error && <Typography color="error">{error}</Typography>}
+        {/* Render UserProfile at the top */}
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3 }}>
+          <UserProfile />
 
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => navigate("/add-note")}
-        style={{ marginBottom: "20px" }}
-      >
-        Add New Note
-      </Button>
+          {/* SearchBar component */}
+          <Box sx={{ flexGrow: 1, maxWidth: 600 }}>
+            <SearchBar
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}  // Pass setSearchTerm to update search term in Home
+            />
+          </Box>
+        </Box>
 
-      <NoteList
-        notes={filteredNotes}
-        expandedNoteIds={expandedNoteIds}
-        handleToggleContent={handleToggleContent}
-        handleDelete={handleDelete}
-        navigate={navigate}
-      />
-    </div>
+        {/* Success and Error Messages */}
+        {successMessage && (
+            <Typography color="success" sx={{ marginBottom: "20px" }}>
+              {successMessage}
+            </Typography>
+        )}
+
+        {error && <Typography color="error">{error}</Typography>}
+
+        {/* Add New Note Button */}
+        <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/add-note")}
+            sx={{ marginBottom: "20px" }}
+        >
+          Add New Note
+        </Button>
+
+        {/* Notes List */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={12} md={9}>
+            <NoteList
+                notes={filteredNotes}  // Pass filteredNotes to NoteList
+                expandedNoteIds={expandedNoteIds}
+                handleToggleContent={handleToggleContent}
+                handleDelete={handleDelete}
+                navigate={navigate}
+            />
+          </Grid>
+        </Grid>
+      </Box>
   );
 };
 
