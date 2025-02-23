@@ -105,7 +105,7 @@ const Home = () => {
       <UserProfile /> {/* Display the user profile component */}
 
       {/* Ensure SearchBar is only rendered once */}
-      <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      {/*<SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />*/}
 
       {successMessage && (
         <Typography color="success" style={{ marginBottom: "20px" }}>
