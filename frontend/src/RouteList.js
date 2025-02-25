@@ -1,54 +1,53 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Navbar from "./Components/Navbar"; // Navbar importieren
-import Login from "./Components/Auth/Login"; // Login-Komponente importieren
-import Register from "./Components/Auth/Register"; // Registrierungs-Komponente importieren
-import Home from "./Components/Home"; // Home-Komponente importieren
-import EditNote from "./Components/Notes/EditNote"; // Komponente zum Bearbeiten einer Notiz importieren
-import AddNote from "./Components/Notes/AddNote"; // Komponente zum Hinzufügen einer Notiz importieren
-import ProtectedRoute from "./Components/ProtectedRoute"; // Geschützte Route importieren (nur für eingeloggte Benutzer zugänglich)
-import ForgetPassword from "./Components/Auth/ForgetPassword"; // "Passwort vergessen"-Komponente importieren
-
+import Navbar from "./Components/Navbar";
+import Login from "./Components/Auth/Login";
+import Register from "./Components/Auth/Register";
+import Home from "./Components/Home";
+import EditNote from "./Components/Notes/EditNote";
+import AddNote from "./Components/Notes/AddNote";
+import ProtectedRoute from "./Components/ProtectedRoute";
+import ForgetPassword from "./Components/Auth/ForgetPassword";
+import Footer from "./Components/Footer";
 const RouteList = ({ toggleDarkMode, darkMode }) => {
-  return (
-    <>
-      {/* Navbar mit Dark Mode Umschalter */}
-      <Navbar toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+    const [searchTerm, setSearchTerm] = React.useState("");
 
-      {/* App-Routen */}
-      <Routes>
-        {/* Öffentliche Routen */}
-        <Route path="/login" element={<Login />} /> {/* Login-Seite */}
-        <Route path="/register" element={<Register />} /> {/* Registrierungsseite */}
+    return (
+        <>
+            {/* Navbar mit Searchfield */}
+            <Navbar toggleDarkMode={toggleDarkMode} darkMode={darkMode} setSearchTerm={setSearchTerm} searchTerm={searchTerm} />
 
-        {/* Geschützte Route zum Hinzufügen von Notizen */}
-        <Route
-          path="/add-note"
-          element={
-            <ProtectedRoute>
-              <AddNote />
-            </ProtectedRoute>
-          }
-        />
+            {/* App Routes */}
+            <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
 
-        {/* Geschützte Route zum Bearbeiten einer Notiz */}
-        <Route
-          path="/edit-note/:id"
-          element={
-            <ProtectedRoute>
-              <EditNote />
-            </ProtectedRoute>
-          }
-        />
+                <Route
+                    path="/add-note"
+                    element={
+                        <ProtectedRoute>
+                            <AddNote />
+                        </ProtectedRoute>
+                    }
+                />
 
-        {/* Home-Route */}
-        <Route path="/" element={<Home />} /> {/* Startseite */}
+                <Route
+                    path="/edit-note/:id"
+                    element={
+                        <ProtectedRoute>
+                            <EditNote />
+                        </ProtectedRoute>
+                    }
+                />
 
-        {/* Route für Passwort vergessen */}
-        <Route path="/forgot-password" element={<ForgetPassword />} /> {/* "Passwort vergessen"-Seite */}
-      </Routes>
-    </>
-  );
+                {/* gibt searchTerm zu Home  */}
+                <Route path="/" element={<Home searchTerm={searchTerm} />} />
+
+                <Route path="/forgot-password" element={<ForgetPassword />} />
+            </Routes>
+            <Footer />
+        </>
+    );
 };
 
 export default RouteList;
