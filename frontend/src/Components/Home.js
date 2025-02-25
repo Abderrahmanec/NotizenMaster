@@ -1,54 +1,67 @@
-// Home.js
-
 import React, { useState, useEffect } from "react";
-import { Typography, Button, CircularProgress, Box, Grid } from "@mui/material";
+import { Typography, CircularProgress, Box, Grid } from "@mui/material";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { deleteNote, getNotes } from "../api";
-import SearchBar from "./Notes/SearchBar";  // SearchBar is imported
 import NoteList from "./Notes/NoteList";
-import UserProfile from './UserProfile'; // Import UserProfile
+import UserProfile from './UserProfile';
 
-const Home = () => {
+const Home = ({ searchTerm = "" }) => { // Standardmäßig leerer String, falls nicht definiert
   const [notes, setNotes] = useState([]);
   const [filteredNotes, setFilteredNotes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [expandedNoteIds, setExpandedNoteIds] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");  // Track the search term
   const navigate = useNavigate();
 
+  // Überprüft, ob das Token noch gültig ist
   const checkTokenExpiration = (token) => {
     if (!token) return false;
     const decodedToken = jwtDecode(token);
     return decodedToken.exp > Date.now() / 1000;
   };
 
+  // Holt Notizen vom Server
   const fetchNotes = async () => {
     const token = localStorage.getItem("token");
     if (!token || !checkTokenExpiration(token)) {
-      alert("Your session has expired. Please log in again.");
+      alert("Du bist abgemeldet.");
       navigate("/login");
       return;
     }
 
     try {
-      const data = await getNotes(); // Use the getNotes function from api.js
+      const data = await getNotes();
       setNotes(data);
-      setFilteredNotes(data);  // Initialize with all notes
+      setFilteredNotes(data); // Standardmäßig alle Notizen anzeigen
     } catch (error) {
-      console.error("Error loading notes:", error);
-      setError("There was an issue loading your notes.");
+      console.error("Fehler beim Laden der Notizen:", error);
+      setError("Es gab ein Problem beim Laden deiner Notizen.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Lädt Notizen beim ersten Rendern der Komponente
   useEffect(() => {
     fetchNotes();
   }, []);
 
+  // Filtert die Notizen basierend auf dem Suchbegriff
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredNotes(notes); // Falls Suchbegriff leer ist, alle Notizen anzeigen
+    } else {
+      const filtered = notes.filter((note) =>
+          note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          note.content.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredNotes(filtered); // Gefilterte Notizen aktualisieren
+    }
+  }, [searchTerm, notes]);
+
+  // Löscht eine Notiz
   const handleDelete = async (noteId) => {
     try {
       const response = await deleteNote(noteId);
@@ -58,18 +71,20 @@ const Home = () => {
         setFilteredNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
         setError("");
       } else {
-        setError("Failed to delete note. Please try again.");
+        setError("Löschen der Notiz fehlgeschlagen. Bitte versuche es erneut.");
       }
 
+      // Erfolgsnachricht nach 3 Sekunden entfernen
       setTimeout(() => {
         setSuccessMessage("");
       }, 3000);
     } catch (error) {
-      console.error("Error deleting note:", error);
-      setError("There was an issue deleting your note.");
+      console.error("Fehler beim Löschen der Notiz:", error);
+      setError("Es gab ein Problem beim Löschen deiner Notiz.");
     }
   };
 
+  // Erweitert oder reduziert den Inhalt einer Notiz
   const handleToggleContent = (noteId) => {
     setExpandedNoteIds((prevState) =>
         prevState.includes(noteId)
@@ -78,64 +93,25 @@ const Home = () => {
     );
   };
 
-  // Filter notes based on searchTerm
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredNotes(notes); // If no search term, display all notes
-    } else {
-      const filtered = notes.filter((note) =>
-          note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          note.content.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredNotes(filtered); // Update filtered notes based on search term
-    }
-  }, [searchTerm, notes]);
-
   if (isLoading) return <div><CircularProgress /></div>;
 
   return (
       <Box sx={{ padding: { xs: "10px", sm: "20px", md: "40px" } }}>
-        <Typography variant="h4" gutterBottom sx={{ marginBottom: "20px" }}>
-          My Notes
-        </Typography>
 
-        {/* Render UserProfile at the top */}
+        {/* Benutzerprofil am oberen Rand anzeigen */}
         <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3 }}>
           <UserProfile />
-
-          {/* SearchBar component */}
-          <Box sx={{ flexGrow: 1, maxWidth: 600 }}>
-            <SearchBar
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}  // Pass setSearchTerm to update search term in Home
-            />
-          </Box>
         </Box>
 
-        {/* Success and Error Messages */}
-        {successMessage && (
-            <Typography color="success" sx={{ marginBottom: "20px" }}>
-              {successMessage}
-            </Typography>
-        )}
-
+        {/* Erfolg- und Fehlermeldungen anzeigen */}
+        {successMessage && <Typography color="success" sx={{ marginBottom: "20px" }}>{successMessage}</Typography>}
         {error && <Typography color="error">{error}</Typography>}
 
-        {/* Add New Note Button */}
-        <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate("/add-note")}
-            sx={{ marginBottom: "20px" }}
-        >
-          Add New Note
-        </Button>
-
-        {/* Notes List */}
+        {/* Notizenliste anzeigen */}
         <Grid container spacing={3}>
           <Grid item xs={12} sm={12} md={9}>
             <NoteList
-                notes={filteredNotes}  // Pass filteredNotes to NoteList
+                notes={filteredNotes}  // Gefilterte Notizen an NoteList übergeben
                 expandedNoteIds={expandedNoteIds}
                 handleToggleContent={handleToggleContent}
                 handleDelete={handleDelete}
