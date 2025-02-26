@@ -49,8 +49,6 @@ public class NoteDTO {
     /**
      * -- GETTER --
      * Gibt die Tags der Notiz zurück.
-     * <p>
-     * <p>
      * -- SETTER --
      * Setzt die Tags der Notiz.
      *
@@ -90,7 +88,6 @@ public class NoteDTO {
 
     /**
      * Konvertiert eine NoteDTO in eine Note.
-     *
      * @param note Die NoteDTO, die konvertiert werden soll
      * @return Die konvertierte Note
      */
