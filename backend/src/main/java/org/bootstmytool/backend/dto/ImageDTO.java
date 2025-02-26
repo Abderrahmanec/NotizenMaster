@@ -17,7 +17,6 @@ public class ImageDTO {
      * -- GETTER --
      * Gibt die URL des Bildes zurueck.
      * <p>
-     * <p>
      * -- SETTER --
      * Setzt die URL des Bildes.
      */
