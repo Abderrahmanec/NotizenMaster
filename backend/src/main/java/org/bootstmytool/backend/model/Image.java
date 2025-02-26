@@ -2,11 +2,14 @@ package org.bootstmytool.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
+ * @version 1.0
+ * @Author: Mohamed Cheikh
+ * @Date: 2025-03-27
  * Die Image-Klasse stellt ein Bild dar, das mit einer Notiz verknüpft ist.
  * Das Bild wird in der Datenbank als Blob gespeichert und kann mit einer Notiz in einer "Viele-zu-Eins"-Beziehung verbunden werden.
  */
@@ -14,14 +17,41 @@ import java.util.List;
 @Table(name = "image")
 public class Image {
 
+    /**
+     * -- GETTER --
+     * Gibt die ID des Bildes zurück.
+     * -- SETTER --
+     * Setzt die ID des Bildes.
+     */
+    @Setter
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id; // Die eindeutige ID des Bildes
 
+    //set and get methods fuer url
+    @Getter
+    @Setter
     private String url; // Die URL des Bildes
+    /**
+     * -- SETTER --
+     * Setzt die Binärdaten des Bildes.     *
+     * -- GETTER --
+     * Gibt die Binärdaten des Bildes zurück.
+     */
+    @Getter
+    @Setter
     @Lob
     private byte[] data; // Die Binärdaten des Bildes (in der Regel als Blob gespeichert)
 
+    /**
+     * -- GETTER --
+     * Gibt die Notiz zurück, zu der dieses Bild gehört.
+     * -- SETTER --
+     * Setzt die Notiz, zu der dieses Bild gehört.
+     */
+    @Setter
+    @Getter
     @ManyToOne
     @JoinColumn(name = "note_id")
     @JsonBackReference
@@ -38,70 +68,6 @@ public class Image {
     public Image() {
         this.createdDate = java.time.LocalDateTime.now();
     }
-
-    /**
-     * Gibt die ID des Bildes zurück.
-     *
-     * @return Die ID des Bildes
-     */
-    public int getId() {
-        return id;
-    }
-
-    /**
-     * Setzt die ID des Bildes.
-     *
-     * @param id Die ID, die gesetzt werden soll
-     */
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    /**
-     * Gibt die Binärdaten des Bildes zurück.
-     *
-     * @return Die Daten des Bildes als Byte-Array
-     */
-    public byte[] getData() {
-        return data;
-    }
-
-    /**
-     * Setzt die Binärdaten des Bildes.
-     *
-     * @param data Die Binärdaten des Bildes
-     */
-    public void setData(byte[] data) {
-        this.data = data;
-    }
-
-    /**
-     * Gibt die Notiz zurück, zu der dieses Bild gehört.
-     *
-     * @return Die Notiz, mit der dieses Bild verknüpft ist
-     */
-    public org.bootstmytool.backend.model.Note getNote() {
-        return note;
-    }
-
-    /**
-     * Setzt die Notiz, zu der dieses Bild gehört.
-     *
-     * @param note Die Notiz, mit der dieses Bild verknüpft werden soll
-     */
-    public void setNote(org.bootstmytool.backend.model.Note note) {
-        this.note = note;
-    }
-
-    //set and get methods fuer url
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
 
 
 }
