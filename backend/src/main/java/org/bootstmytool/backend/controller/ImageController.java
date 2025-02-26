@@ -112,7 +112,6 @@ public class ImageController {
         }
     }
 
-
     /**
      * <p>
      * Löscht ein Bild anhand seiner ID.
