@@ -14,36 +14,41 @@ import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
+/**
+ * @Author Mohamed Cheikh
+ * @Version 1.0
+ * @Date: 2025-03-27
+ * Service-Klasse, die Methoden zum Erstellen und Überprüfen von JWT-Token bereitstellt.
+ */
+
 @Service
 public class JwtService {
 
     @Value("${jwt.secret}")
     private String secret;
 
-   // private static final long JWT_EXPIRATION_TIME = 1000 * 60 * 60 * 10; // 10 hours
-   //private static final long JWT_EXPIRATION_TIME = 1000 * 60 * 1; // 1 minute
-   @Value("${jwt.expiration}")
-   private long JWT_EXPIRATION_TIME;
+    @Value("${jwt.expiration}")
+    private long JWT_EXPIRATION_TIME;
 
     /**
-     * Retrieves the signing key, ensuring it is at least 32 characters long.
+     * Gibt den geheimen Schlüssel für die Signatur des JWT zurück.
      */
     private Key getSigningKey() {
         if (secret.length() < 32) {
-            throw new IllegalArgumentException("The secret key must be at least 32 characters long");
+            throw new IllegalArgumentException("JWT Secret muss mindestens 32 Zeichen lang sein.");
         }
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
-     * Extracts the username (subject) from the JWT token.
+     * Abstrakt den Benutzernamen aus dem JWT-Token.
      */
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
     /**
-     * Extracts a specific claim from the JWT token.
+     * Abstrakt einen Anspruch aus dem JWT-Token.
      */
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
@@ -51,7 +56,7 @@ public class JwtService {
     }
 
     /**
-     * Extracts all claims from the JWT token.
+     * Abstrakt alle Ansprüche aus dem JWT-Token.
      */
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
@@ -62,17 +67,16 @@ public class JwtService {
     }
 
     /**
-     * Checks if the JWT token is expired.
+     * Prüft, ob das JWT-Token abgelaufen ist.
      */
     public Boolean isTokenExpired(String token) {
         Date expirationDate = extractExpiration(token);
-        System.out.println("Token expiration date: " + expirationDate);
         return expirationDate.before(new Date());
     }
 
 
     /**
-     * Extracts the expiration date from the JWT token.
+     * Abstrakt das Ablaufdatum aus dem JWT-Token.
      */
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
@@ -81,9 +85,9 @@ public class JwtService {
     /**
      * Generates a JWT token for the given username with an expiration time.
      */
-    public String generateToken(String username) {
+    public String generateToken(String email) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION_TIME))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -91,7 +95,7 @@ public class JwtService {
     }
 
     /**
-     * Validates the JWT token by comparing the username and checking expiration.
+     * Validiert das JWT-Token für den gegebenen Benutzer.
      */
     public boolean validateToken(String jwt, UserDetails userDetails) {
         final String username = extractUsername(jwt);
