@@ -1,6 +1,6 @@
 package org.bootstmytool.backend.security;
+
 import jakarta.annotation.PostConstruct;
-import org.bootstmytool.backend.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,9 +20,13 @@ import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.Arrays;
 
 /**
+ * @Author Mohamed Cheikh
+ * @Version 1.0
+ * @Date: 2025-03-27
  * Diese Klasse enthält die Sicherheitskonfiguration für die Anwendung.
  * Sie konfiguriert den Zugriff auf Endpunkte, die Verwendung von JWT und CORS-Einstellungen.
  */
@@ -41,7 +45,7 @@ public class SecurityConfig {
      */
     @PostConstruct
     public void init() {
-        // Setzt das geheime Schlüssel für JWT, falls nicht bereits in der Konfiguration gesetzt
+        // Setzt das geheime Schluessel für JWT, falls nicht bereits in der Konfiguration gesetzt
         this.jwtSecret = JwtSecretGenerator.getSecretKey();
     }
 
@@ -104,7 +108,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless-Session
 
-        // Fügt den JWT-Filter hinzu
+        // Fuegt den JWT-Filter hinzu
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -119,8 +123,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:3000","http://localhost:3001", "http://192.168.178.144:3000")); // Frontend-URLs erlauben
-        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE","OPTIONS")); // Erlaubte HTTP-Methoden
+        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3001", "http://192.168.178.144:3000")); // Frontend-URLs erlauben
+        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Erlaubte HTTP-Methoden
         corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With")); // Erlaubte Header
         corsConfiguration.setAllowCredentials(true); // Erlaubt Cookies und Authentifizierung
         // Registrierung der CORS-Konfiguration für alle Endpunkte
