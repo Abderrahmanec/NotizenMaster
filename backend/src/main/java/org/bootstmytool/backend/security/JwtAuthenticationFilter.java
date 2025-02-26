@@ -1,14 +1,12 @@
 package org.bootstmytool.backend.security;
 
-import jakarta.servlet.Filter;
+
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.bootstmytool.backend.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,9 +16,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-import org.bootstmytool.backend.service.*;
 
 /**
+ * @Author Mohamed Cheikh
+ * @Version 1.0
+ * @Date: 2025-03-27
  * Filter, der jede Anfrage überprüft und sicherstellt, dass der Benutzer authentifiziert ist,
  * indem ein gültiger JWT-Token im Authorization-Header der Anfrage übermittelt wird.
  * Wird nur einmal pro Anfrage ausgeführt (OncePerRequestFilter).
@@ -34,7 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     /**
      * Konstruktor für den JwtAuthenticationFilter.
      *
-     * @param jwtTokenUtil Das Service-Objekt, das für die Verarbeitung von JWT-Tokens verantwortlich ist
+     * @param jwtTokenUtil             Das Service-Objekt, das für die Verarbeitung von JWT-Tokens verantwortlich ist
      * @param customUserDetailsService Das Service-Objekt für die Benutzerinformationen
      */
     @Autowired
@@ -47,11 +47,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * Diese Methode filtert die eingehenden HTTP-Anfragen und überprüft, ob ein gültiger JWT-Token vorhanden ist.
      * Falls der Token gültig ist, wird der Benutzer im SecurityContext authentifiziert.
      *
-     * @param request Die eingehende HTTP-Anfrage
-     * @param response Die Antwort, die an den Client zurückgeschickt wird
+     * @param request     Die eingehende HTTP-Anfrage
+     * @param response    Die Antwort, die an den Client zurückgeschickt wird
      * @param filterChain Die Filterkette, die nach der Authentifizierung fortgesetzt wird
      * @throws ServletException Wenn eine Servlet-spezifische Ausnahme auftritt
-     * @throws IOException Wenn ein Fehler beim Verarbeiten der Anfrage oder Antwort auftritt
+     * @throws IOException      Wenn ein Fehler beim Verarbeiten der Anfrage oder Antwort auftritt
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -66,16 +66,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 username = jwtTokenUtil.extractUsername(jwt);
 
-                // 🔥 Check if token is expired
+                // Ueberprueft, ob der Token abgelaufen ist
                 if (jwtTokenUtil.isTokenExpired(jwt)) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Token has expired");
+                    response.getWriter().write("Token ist abgelaufen");
                     return;
                 }
 
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Invalid or expired token");
+                response.getWriter().write("Ungültiger Token");
                 return;
             }
         }
