@@ -8,19 +8,14 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * @Author Mohamed Cheikh
+ * @Version 1.0
+ * @Date: 2025-03-27
  * Das Repository für die Note-Entität. Es stellt die grundlegenden CRUD-Operationen
  * zur Verfügung und enthält zusätzliche Methoden zum Abrufen von Notizen eines bestimmten Benutzers.
  * Diese Schnittstelle erweitert JpaRepository, um eine Verbindung zur Datenbank herzustellen.
  */
-public interface NoteRepository extends JpaRepository<Note, Integer> { // ID ist vom Typ Integer, nicht Long
-
-    /**
-     * Findet alle Notizen eines bestimmten Benutzers anhand der Benutzer-ID.
-     *
-     * @param userId Die ID des Benutzers
-     * @return Eine Liste von Notizen des Benutzers
-     */
-    List<Note> findAllByUserId(int userId); // Findet alle Notizen eines Benutzers
+public interface NoteRepository extends JpaRepository<Note, Integer> {
 
     /**
      * Findet eine Note anhand ihrer ID.
@@ -30,13 +25,11 @@ public interface NoteRepository extends JpaRepository<Note, Integer> { // ID ist
      */
     Optional<Note> findById(int noteId); // Findet eine Note anhand ihrer ID
 
-    List<Note> findByUserId(int id);
+    List<Note> findByUserId(int id); // Findet alle Notizen eines bestimmten Benutzers
 
-    List<Note> findByContentContainingAndUserUsername(String title, String content);
+    Optional<Note> getNoteById(int noteId); // Findet eine Note anhand ihrer ID
 
-    Optional<Note> getNoteById(int noteId);
-
-    List<Note> findByImagesContaining(Image image);
+    List<Note> findByImagesContaining(Image image); // Findet alle Notizen, die ein bestimmtes Bild enthalten
 
 }
 
