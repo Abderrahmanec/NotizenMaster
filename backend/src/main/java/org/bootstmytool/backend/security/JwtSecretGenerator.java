@@ -4,6 +4,9 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 /**
+ * @Author Mohamed Cheikh
+ * @Version 1.0
+ * @Date: 2025-03-27
  * Diese Klasse generiert ein zufälliges Geheimnis (Secret Key) für JWT.
  * Sie bietet Methoden zur Erzeugung eines neuen Schlüssels oder zum Abrufen
  * eines vorhandenen Geheimnisses aus einer Umgebungsvariable.
@@ -18,9 +21,9 @@ public class JwtSecretGenerator {
      */
     public static String generateSecretKey() {
         SecureRandom secureRandom = new SecureRandom(); // Instanziierung eines sicheren Zufallszahlengenerators
-        byte[] secretKey = new byte[32]; // 256-Bit-Schlüssel (32 Byte)
-        secureRandom.nextBytes(secretKey); // Zufällige Bytes generieren
-        return Base64.getEncoder().encodeToString(secretKey); // Zurückgabe des Schlüssels als Base64-kodierte Zeichenkette
+        byte[] secretKey = new byte[32]; // 256-Bit-Schluessel (32 Byte)
+        secureRandom.nextBytes(secretKey); // Zufaelige Bytes generieren
+        return Base64.getEncoder().encodeToString(secretKey); // Zurueckgabe des Schluessels als Base64-kodierte Zeichenkette
     }
 
     /**
@@ -31,10 +34,10 @@ public class JwtSecretGenerator {
      */
     public static String getSecretKey() {
         String secretKey = System.getenv("JWT_SECRET_KEY"); // Abrufen des Geheimnisses aus der Umgebungsvariablen
-        if (secretKey == null || secretKey.isEmpty()) { // Überprüfen, ob der Schlüssel leer oder null ist
-            // Wenn der Schlüssel nicht gesetzt ist, wird ein neuer Schlüssel generiert
+        if (secretKey == null || secretKey.isEmpty()) { // ueberpruefen, ob der Schlüssel leer oder null ist
+            // Wenn der Schluessel nicht gesetzt ist, wird ein neuer Schluessel generiert
             secretKey = generateSecretKey();
         }
-        return secretKey; // Zurückgeben des Geheimnisses
+        return secretKey; // Zurueckgeben des Geheimnisses
     }
 }
