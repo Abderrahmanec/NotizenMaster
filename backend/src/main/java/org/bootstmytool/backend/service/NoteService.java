@@ -10,6 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * @Author Mohamed Cheikh
+ * @Version 1.0
+ * @Date: 2025-03-27
+ * Service-Klasse für die Verarbeitung von Notizen.
+ */
+
 @Service
 public class NoteService {
 
@@ -19,7 +26,7 @@ public class NoteService {
     /**
      * Erstellt eine neue Instanz von NoteService.
      *
-     * @param noteRepository das NoteRepository, das verwendet werden soll.
+     * @param noteRepository  das NoteRepository, das verwendet werden soll.
      * @param imageRepository das ImageRepository, das verwendet werden soll.
      */
     @Autowired
@@ -36,19 +43,20 @@ public class NoteService {
      */
     @Transactional
     public Note createNote(Note note) {
-        // Save the note first
+        // Speichern der Notiz in der Datenbank
         Note savedNote = noteRepository.save(note);
 
-        // Ensure images are associated with the saved note
+        //Gewaehrleisten, dass die Bilder der Notiz in der Datenbank gespeichert werden
         if (note.getImages() != null) {
             for (Image image : note.getImages()) {
-                image.setNote(savedNote);  // Associate image with the saved note
-                imageRepository.save(image);  // Save the image with the note_id
+                image.setNote(savedNote);
+                imageRepository.save(image);
             }
         }
 
         return savedNote;
     }
+
     /**
      * Holt eine Notiz aus der Datenbank basierend auf der angegebenen ID.
      *
@@ -59,21 +67,38 @@ public class NoteService {
         return noteRepository.getNoteById(id).orElse(null);
     }
 
+    /**
+     * Holt alle Notizen aus der Datenbank.
+     *
+     * @return eine Liste von Notizen.
+     */
     public List<Note> getNotesByUserId(int id) {
         return noteRepository.findByUserId(id);
     }
 
 
-
+    /**
+     * Löscht eine Notiz aus der Datenbank basierend auf der angegebenen ID.
+     *
+     * @param id die ID der Notiz.
+     * @return eine Bestätigungsmeldung, dass die Notiz gelöscht wurde, oder eine Meldung, dass die Notiz nicht gefunden wurde.
+     */
     public String deleteNoteById(int id) {
         Note existingNote = noteRepository.findById(id).orElse(null);
         if (existingNote != null) {
             noteRepository.delete(existingNote);
-            return "Note deleted successfully!";
+            return "Notiz gelöscht!";
         }
-        return "Note not found!";
+        return "Notiz nicht gefunden!";
     }
 
+    /**
+     * Bearbeitet eine Notiz basierend auf der angegebenen ID.
+     *
+     * @param id   die ID der Notiz.
+     * @param note die aktualisierte Notiz.
+     * @return die aktualisierte Notiz.
+     */
     public Note editNoteById(int id, Note note) {
         Note existingNote = noteRepository.findById(id).orElse(null);
         if (existingNote != null) {
@@ -85,10 +110,12 @@ public class NoteService {
     }
 
 
-    public List<Note> searchNotes(String searchTerm, String username) {
-        return noteRepository.findByContentContainingAndUserUsername(searchTerm, username);
-    }
-
+    /**
+     * Aktualisiert eine Notiz in der Datenbank.
+     *
+     * @param existingNote die zu aktualisierende Notiz.
+     * @return die aktualisierte Notiz.
+     */
     public Note updateNote(Note existingNote) {
         return noteRepository.save(existingNote);
     }
