@@ -1,8 +1,29 @@
 package org.bootstmytool.backend.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @version 1.0
+ * @Author Mohamed Cheikh
+ * @Date: 2025-03-27
+ * Das ImageDTO (Data Transfer Object) wird verwendet, um Bilddaten zwischen den verschiedenen Schichten der Anwendung zu übertragen.
+ * Es enthält grundlegende Informationen über das Bild wie die URL.
+ */
+@Setter
+@Getter
 public class ImageDTO {
+    /**
+     * -- GETTER --
+     * Gibt die URL des Bildes zurueck.
+     * <p>
+     * <p>
+     * -- SETTER --
+     * Setzt die URL des Bildes.
+     */
     private String url;
     private int id;
+
     /**
      * Erstellt ein neues ImageDTO.
      */
@@ -19,33 +40,8 @@ public class ImageDTO {
     }
 
     public ImageDTO(int id, String url) {
-        this.id=id;
-        this.url=url;
-    }
-
-    /**
-     * Gibt die URL des Bildes zurueck.
-     *
-     * @return Die URL des Bildes.
-     */
-    public String getUrl() {
-        return url;
-    }
-
-    /**
-     * Setzt die URL des Bildes.
-     *
-     * @param url Die URL des Bildes.
-     */
-    public void setUrl(String url) {
+        this.id = id;
         this.url = url;
     }
 
-    public void setId(int id) {
-        this.id=id;
-    }
-
-    public int getId() {
-        return id;
-    }
 }
