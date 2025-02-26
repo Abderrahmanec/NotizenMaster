@@ -1,65 +1,66 @@
 package org.bootstmytool.backend.controller;
 
 
+import lombok.Getter;
+import lombok.Setter;
+import org.bootstmytool.backend.model.User;
+import org.bootstmytool.backend.repository.UserRepository;
+import org.bootstmytool.backend.security.CustomUserDetailsService;
+import org.bootstmytool.backend.service.AuthService;
+import org.bootstmytool.backend.service.JwtService;
+import org.bootstmytool.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+import java.util.Optional;
+
 /**
+ * @Author: Mohamed Cheikh
+ * @Version: 1.0
+ * @Date: 2025-03-27
+ * <p>
  * AuthController ist der Controller, der für die Authentifizierung und Registrierung der Benutzer verantwortlich ist.
  * Es enthält Endpunkte für das Login und die Registrierung von Benutzern.
+ * Auch die Verifizierung des Benutzers und das Zurücksetzen des Passworts sind in diesem Controller enthalten.
+ * </p>
  */
 @RestController
-@CrossOrigin(origins = "*") // Erlaubt explizit alle Ursprünge
+@RequestMapping("/api/auth")
+@CrossOrigin(origins = "*") // Erlaubt explizit alle Urspruenge
 public class AuthController {
 
     @Autowired
-    private org.bootstmytool.backend.service.AuthService authService; // Authentifizierungsdienst
+    private AuthService authService; // Authentifizierungsdienst
 
     @Autowired
-    private org.bootstmytool.backend.service.JwtService jwtService; // JWT-Dienst zum Generieren von Token
+    private JwtService jwtService; // JWT-Dienst zum Generieren von Token
+    @Autowired
+    private UserRepository userRepository; // Benutzerrepository
 
-    /**
-     * Endpunkt für die Anmeldung eines Benutzers.
-     * Überprüft die Benutzeranmeldeinformationen und gibt ein JWT-Token zurück, wenn die Anmeldung erfolgreich ist.
-     *
-     * @param request Die Anmeldedaten des Benutzers (Benutzername und Passwort)
-     * @return Eine ResponseEntity mit dem Ergebnis der Anmeldung
-     */
-    @PostMapping("/api/auth/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginRequest request) {
-        System.out.println("Empfangene Login-Anfrage für Benutzername: " + request.getUsername());
+    @Autowired
+    private CustomUserDetailsService userDetailsService; // Benutzerdetailservice
 
-        // Authentifizierung des Benutzers
-        boolean authenticated = authService.authenticate(request.getUsername(), request.getPassword());
-        System.out.println("Authentifizierungsstatus für Benutzer " + request.getUsername() + ": " + authenticated);
+    @Autowired
+    UserService userService;
 
-        if (authenticated) {
-            // Generiere JWT-Token
-            String token = jwtService.generateToken(request.getUsername());
-            System.out.println("Generiertes Token für Benutzer " + request.getUsername() + ": " + token);
-            return ResponseEntity.ok(new LoginResponse(true, "Login erfolgreich", token));
-        } else {
-            return ResponseEntity.status(401).body(new LoginResponse(false, "Ungültige Anmeldedaten", null));
-        }
-    }
 
     /**
      * Endpunkt für die Registrierung eines neuen Benutzers.
-     * Überprüft, ob der Benutzername bereits existiert und registriert den Benutzer, falls nicht.
+     * Überprüft, ob die E-Mail bereits existiert und registriert den Benutzer, falls nicht.
      *
      * @param credentials Die Anmeldedaten des neuen Benutzers
      * @return Eine ResponseEntity mit dem Ergebnis der Registrierung
      */
-    @PostMapping("/api/auth/register")
+    @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserCredentials credentials) {
-        // Details der Registrierungsanfrage ausgeben
-        System.out.println("Empfangene Registrierungsanfrage:");
-        System.out.println("Benutzername: " + credentials.getUsername());
-        System.out.println("Passwort: " + credentials.getPassword());
 
         // Benutzerregistrierung
-        boolean registrationSuccess = authService.registerUser(credentials.getUsername(), credentials.getPassword());
+        boolean registrationSuccess = authService.registerUser(credentials.getEmail(), credentials.getPassword());
         if (registrationSuccess) {
             return ResponseEntity.ok("Registrierung erfolgreich");
         } else {
@@ -67,39 +68,140 @@ public class AuthController {
         }
     }
 
+
+    /**
+     * Endpunkt für die Anmeldung eines Benutzers.
+     * Überprüft die Benutzeranmeldeinformationen und gibt ein JWT-Token zurück, wenn die Anmeldung erfolgreich ist.
+     *
+     * @param request Die Anmeldedaten des Benutzers (Email und Passwort)
+     * @return Eine ResponseEntity mit dem Ergebnis der Anmeldung
+     */
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody UserLoginRequest request) {
+
+        // Authentifizierung des Benutzers
+        boolean authenticated = authService.authenticate(request.getEmail(), request.getPassword());
+
+        if (authenticated) {
+            // Generiere JWT-Token
+            String token = jwtService.generateToken(request.getEmail());
+            return ResponseEntity.ok(new LoginResponse(true, "Login erfolgreich", token));
+        } else {
+            return ResponseEntity.status(401).body(new LoginResponse(false, "Ungültige Anmeldedaten", null));
+        }
+    }
+
+
+    /**
+     * Endpunkt für die Verifizierung eines Benutzers.
+     * Überprüft, ob der Benutzername und die Länge des Benutzernamens übereinstimmen.
+     * Die Länge ist in der Datenbank gespeichert und wird mit der Länge des Benutzernamens verglichen.
+     * Wenn die Längen übereinstimmen, wird ein JWT-Token zurückgegeben.
+     *
+     * @param body Die Anfrage mit den Benutzerdaten
+     * @return Eine ResponseEntity mit dem Ergebnis der Verifizierung
+     */
+    @PostMapping("/verify")
+    public ResponseEntity<?> verifyUser(@RequestBody Map<String, Object> body) {
+        try {
+            String email = (String) body.get("email");
+            int nameLength = Integer.parseInt(body.get("nameLength").toString());
+
+            Optional<User> user = userRepository.findByEmail(email);
+
+            if (user.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Benutzer nicht gefunden");
+            }
+
+            if (nameLength != user.get().getNameLength()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Verifikation fehlgeschlagen");
+            }
+
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body("Ungültiges Zahlenformat für nameLength");
+        } catch (NullPointerException e) {
+            return ResponseEntity.badRequest().body("Erforderliche Felder fehlen");
+        }
+
+        //Erfolgreiche Verifizierung
+        UserLoginRequest loginRequest = new UserLoginRequest();
+        loginRequest.setEmail((String) body.get("email"));
+        loginRequest.setPassword((String) body.get("password"));
+        String email = (String) body.get("email");
+
+        // Generiere JWT-Token
+        String token = jwtService.generateToken(email);
+
+        return ResponseEntity.ok(new LoginResponse(true, "OK", token));
+    }
+
+
+    /**
+     * Endpunkt zum Zurücksetzen des Passworts eines Benutzers.
+     * Überprüft, ob der Token gültig ist und setzt das Passwort zurück.
+     *
+     * @param token Der JWT-Token des Benutzers
+     * @param body  Die Anfrage mit dem neuen Passwort
+     * @return Eine ResponseEntity mit dem Ergebnis des Passwortzurücksetzens
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestParam("token") String token, @RequestBody Map<String, String> body) {
+
+        // Benutzerdetails laden
+        UserDetails userDetails = userDetailsService.loadUserByUsername(extractUsername(token));
+
+        //hier wird Token von VerfiyUser() Methode übergeben
+        if (!jwtService.validateToken(token, userDetails)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token ist ungültig");
+        }
+        //Finden den Benutzer anhand der Email
+        String userEmail = jwtService.extractUsername(token);
+        Optional<User> userOptional = userRepository.findByEmail(userEmail);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Benutzer nicht gefunden");
+        }
+
+        User user = userOptional.get();
+
+        //Entschluesseln des neuen Passworts
+        String newPassword = body.get("newPassword");
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String encryptedPassword = encoder.encode(newPassword);
+
+        //Setzen des neuen Passworts
+        user.setPassword(encryptedPassword);
+        userRepository.save(user);
+        return ResponseEntity.ok("Passwort erfolgreich zurückgesetzt");
+    }
+
+    private String extractUsername(String token) {
+        return jwtService.extractUsername(token);
+    }
+
+
+
+
     /**
      * Benutzerlogin-Datenmodell.
      * Enthält den Benutzernamen und das Passwort für den Login-Vorgang.
      */
+    @Setter
+    @Getter
     public static class UserLoginRequest {
-        private String username; // Benutzername
+        private String email;// Benutzername
         private String password; // Passwort
 
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
     }
 
     /**
      * Antwortmodell für das Login.
      * Enthält den Status der Anmeldung (erfolgreich oder nicht), eine Nachricht und das JWT-Token.
      */
+    @Getter
     public static class LoginResponse {
-        private boolean success; // Erfolgsstatus der Anmeldung
-        private String message;  // Nachricht zur Anmeldung
-        private String token;    // JWT-Token
+        private final boolean success; // Erfolgsstatus der Anmeldung
+        private final String message;  // Nachricht zur Anmeldung
+        private final String token;    // JWT-Token
 
         public LoginResponse(boolean success, String message, String token) {
             this.success = success;
@@ -107,53 +209,21 @@ public class AuthController {
             this.token = token;
         }
 
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public void setSuccess(boolean success) {
-            this.success = success;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
-        public String getToken() {
-            return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
-        }
     }
 
     /**
      * Benutzeranmeldedatenmodell.
-     * Enthält den Benutzernamen und das Passwort für die Registrierung und Authentifizierung.
+     * Enthält die Email und das Passwort für die Registrierung und Authentifizierung.
      */
+    @Setter
+    @Getter
     public static class UserCredentials {
-        private String username; // Benutzername
+        private String email; // Benutzername
         private String password; // Passwort
 
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
     }
+
+
+
+
 }
