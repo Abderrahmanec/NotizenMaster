@@ -20,6 +20,8 @@ export const AuthProvider = ({ children }) => {
       try {
         const decodedUser = jwtDecode(token); // Dekodieren des Tokens
         const currentTime = Date.now() / 1000; // Umwandlung in Sekunden
+            const email=decodedUser.sub;
+            const username=email.split("@")[0];
 
         if (decodedUser.exp < currentTime) { // Wenn das Token abgelaufen ist
           console.error("Token ist abgelaufen");
@@ -28,7 +30,7 @@ export const AuthProvider = ({ children }) => {
           setAlertMessage("Ihre Sitzung ist abgelaufen. Bitte loggen Sie sich erneut ein.");
           setAlertSeverity("error"); // Fehlerbenachrichtigung anzeigen
         } else {
-          setUser({ token, ...decodedUser }); // Gültiges Token und Benutzerdaten speichern
+          setUser({ token, username }); // Gültiges Token und Benutzerdaten speichern
           setAlertMessage("Willkommen zurück! Sie sind eingeloggt.");
           setAlertSeverity("success"); // Erfolgsbenachrichtigung anzeigen
         }
