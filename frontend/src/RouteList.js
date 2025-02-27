@@ -9,6 +9,7 @@ import AddNote from "./Components/Notes/AddNote";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import ForgetPassword from "./Components/Auth/ForgetPassword";
 import Footer from "./Components/Footer";
+import ResetPassword from "./Components/Auth/ResetPassword";
 const RouteList = ({ toggleDarkMode, darkMode }) => {
     const [searchTerm, setSearchTerm] = React.useState("");
 
@@ -21,6 +22,8 @@ const RouteList = ({ toggleDarkMode, darkMode }) => {
             <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+             
 
                 <Route
                     path="/add-note"
