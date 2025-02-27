@@ -6,11 +6,13 @@ import {
   Container,
   Paper,
   CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
+import { verifyUser } from "../../api";
 
-// Styled Paper-Komponente für das Design
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
   display: "flex",
@@ -23,7 +25,6 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   boxShadow: "0 3px 10px rgba(0, 0, 0, 0.2)",
 }));
 
-// Formularstil definieren
 const Form = styled("form")(({ theme }) => ({
   width: "100%",
   marginTop: theme.spacing(1),
@@ -31,70 +32,57 @@ const Form = styled("form")(({ theme }) => ({
 
 function ForgetPassword() {
   const navigate = useNavigate();
-  
-  // Zustand für die Formulardaten
   const [email, setEmail] = useState("");
-  
-  // Zustand für Fehleranzeigen
-  const [error, setError] = useState("");
-  
-  // Zustand für den Ladeindikator
+  const [nameLength, setNameLength] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [answerError, setAnswerError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  // Funktion zum Bearbeiten des Email-Eingabefelds
-  const handleChange = (e) => {
+  const handleChangeEmail = (e) => {
     setEmail(e.target.value);
-    setError(""); // Fehler zurücksetzen, wenn der Benutzer etwas tippt
+    setEmailError(""); 
   };
 
-  // Formularabsendung
+  const handleChangeAnswer = (e) => {
+    setNameLength(e.target.value);
+    setAnswerError(""); 
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validierung des Email-Felds
-    if (!email) {
-      setError("Email ist erforderlich");
+
+    if (!email || !nameLength) {
+      setEmailError(email ? "" : "Email ist erforderlich");
+      setAnswerError(nameLength ? "" : "Antwort ist erforderlich");
       return;
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setError("Bitte eine gültige E-Mail-Adresse eingeben");
+      setEmailError("Bitte eine gültige E-Mail-Adresse eingeben");
       return;
     }
 
     setLoading(true);
-    
+
     try {
-      // Anfrage an das Backend senden (API-URL besser aus Umgebungsvariablen laden)
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/forgot-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
+      const res = await verifyUser(email, nameLength);
 
-      // Falls die Antwort kein "ok" ist, Fehler auslesen und werfen
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text);
-      }
+      console.log("Success "+res.data.succes);
 
-      const data = await response.text();
-      console.log("Antwort vom Backend:", data);
-
-      // Erfolgreiche Antwort prüfen
-      if (data === "Password reset link sent") {
-        alert("Ein Link zum Zurücksetzen des Passworts wurde an Ihre E-Mail gesendet.");
-        navigate("/login");
+      if (res.data.success===true) {
+      localStorage.setItem("resetPassToken", res.data.token);
+        setSuccessMessage("Ein Link zum Zurücksetzen des Passworts wurde gesendet.");
+        setSnackbarOpen(true);
+        setTimeout(() => navigate("/reset-password"), 3000); // Navigate after 3 seconds
       } else {
-        setError(data); // Fehlermeldung vom Server anzeigen
+        setEmailError("Fehler beim Senden des Links. Bitte später erneut versuchen.");	
       }
     } catch (error) {
-      console.error("Fehler bei der Passwort-Zurücksetzung:", error);
-      setError("Fehler beim Senden des Links. Bitte später erneut versuchen.");
+      setEmailError("Fehler beim Senden des Links. Bitte später erneut versuchen.");
     } finally {
-      setLoading(false); // Ladeanzeige zurücksetzen
+      setLoading(false);
     }
   };
 
@@ -113,13 +101,33 @@ function ForgetPassword() {
             name="email"
             type="email"
             value={email}
-            onChange={handleChange}
-            error={!!error}
-            helperText={error}
+            onChange={handleChangeEmail}
+            error={!!emailError}
+            helperText={emailError}
             autoComplete="email"
             autoFocus
           />
-          
+
+
+
+
+<TextField
+  margin="normal"
+  required
+  fullWidth
+  label="Antwort auf die Sicherheitsfrage"
+  name="nameLength"
+  value={nameLength}
+  onChange={handleChangeAnswer}
+  error={!!answerError}
+  helperText={answerError}
+/>
+
+<Typography variant="body2" color="textSecondary" align="left">
+  Die Antwort ist die Anzahl der Buchstaben im Teil Ihrer E-Mail-Adresse vor dem "@"-Symbol.
+</Typography>
+
+
           {loading ? (
             <CircularProgress />
           ) : (
@@ -128,16 +136,18 @@ function ForgetPassword() {
             </Button>
           )}
 
-          <Button
-            fullWidth
-            variant="outlined"
-            onClick={() => navigate("/login")}
-            sx={{ mt: 2 }}
-          >
+          <Button fullWidth variant="outlined" onClick={() => navigate("/login")} sx={{ mt: 2 }}>
             Passwort doch noch im Kopf? Zum Login
           </Button>
         </Form>
       </StyledPaper>
+
+      {/* Snackbar for feedback */}
+      <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={() => setSnackbarOpen(false)}>
+        <Alert severity="success" onClose={() => setSnackbarOpen(false)}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }
