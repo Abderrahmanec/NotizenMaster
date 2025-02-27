@@ -98,7 +98,7 @@ const Navbar = ({ toggleDarkMode, darkMode, setSearchTerm, searchTerm }) => {
 
                                 {/* Benutzer-Avatar */}
                                 <Avatar sx={{ bgcolor: "secondary.main", width: 40, height: 40, ml: 2, cursor: "pointer" }} onClick={cli}>
-                                    {user?.email?.charAt(0).toUpperCase()}
+                                    {user?.username?.charAt(0).toUpperCase()}
                                 </Avatar>
 
                                 {/* Button zum Hinzufügen einer neuen Notiz */}
