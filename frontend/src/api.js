@@ -261,7 +261,7 @@ export const deleteImage = async (imageId) => {
     if (response.ok) {
       const data = await response.json();
       console.log('Image added successfully:', data);
-      // You can now display the image preview or update the note UI
+      
     } else {
       console.error('Failed to upload image');
     }
@@ -269,3 +269,62 @@ export const deleteImage = async (imageId) => {
     console.error('Error uploading image:', error);
   }
 };
+
+
+
+
+export const verifyUser = async (email, nameLength) => {
+  console.log('Resetting password for email:', email, "and nameLength:", nameLength);
+
+  try {
+    // Make the POST request with JSON body
+    const res = await axios.post('http://localhost:8080/api/auth/verify', { email, nameLength }, {
+      headers: {
+        'Content-Type': 'application/json' // Ensures backend processes the request as JSON
+      }
+    });
+console.log('reset-password response:', res.data);
+console.log('the succes:', res.data.success);
+    // Return success message from backend
+    return res;
+  } catch (error) {
+    // Handle error if it happens (e.g., 400 or 500 errors)
+    console.error('Error resetting password:', error);
+    return error.response?.data || "Ein Fehler ist aufgetreten"; // Custom fallback error message
+  }
+};
+
+ 
+
+
+
+
+export const resetPassword = async (newPassword) => {
+  try {
+    const token = localStorage.getItem('resetPassToken');
+    const response = await axios.post('http://localhost:8080/api/auth/reset-password', 
+      { newPassword },
+      {
+        params: {
+          token: token // Sending the token as a query parameter
+        },
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+    console.log('API Response:', response);  // Überprüfe die gesamte API-Antwort
+
+    // Rückgabe der Antwortdaten für den weiteren Gebrauch
+    localStorage.removeItem('resetPassToken');  // Token nach der Anfrage löschen
+    console.log('Response data:', response.data);
+    return response.data;  // Nur die relevanten Daten zurückgeben
+  } catch (error) {
+    console.error('Error resetting password:', error);  // Logge detaillierte Fehler
+
+    // Wenn kein `response.data` vorhanden ist, dann gib eine allgemeine Fehlermeldung zurück
+    return error.response?.data || { success: false, error: "Unbekannter Fehler. Bitte versuchen Sie es später erneut." };
+  }
+};
+
+
