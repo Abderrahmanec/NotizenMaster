@@ -43,12 +43,12 @@ function Register() {
 
   // State für Formulardaten und Fehler
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({
-    username: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
@@ -76,7 +76,12 @@ function Register() {
     const newErrors = {};
 
     // Validierung der Eingaben
-    if (!formData.username) newErrors.username = "Benutzername ist erforderlich";
+    
+    if (!formData.email) newErrors.email = "Email ist erforderlich";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) // Überprüft das E-Mail-Format mit einer RegEx
+      newErrors.email = "Bitte gib eine gültige E-Mail-Adresse ein";
+    
+
     if (!formData.password) newErrors.password = "Passwort ist erforderlich";
     else if (formData.password.length < 6)
       newErrors.password = "Das Passwort muss mindestens 6 Zeichen lang sein";
@@ -94,7 +99,7 @@ function Register() {
 
     // Registrierung mit den Formulardaten
     const registrationData = {
-      username: formData.username,
+      email: formData.email,
       password: formData.password,
     };
 
@@ -128,12 +133,13 @@ function Register() {
             margin="normal"
             required
             fullWidth
-            label="Benutzername"
-            name="username"
-            value={formData.username}
+            label="Email"
+            name="email"
+            type="email"
+            value={formData.email}
             onChange={handleChange}
-            error={!!errors.username}
-            helperText={errors.username}
+            error={!!errors.email}
+            helperText={errors.email}
           />
           {/* Passwort */}
           <TextField
