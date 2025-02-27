@@ -12,9 +12,9 @@ const UserProfile = () => {
       try {
         // Entschlüsselt das JWT-Token
         const decodedToken = jwtDecode(user.token); 
-        console.log(decodedToken); // Zum Überprüfen, ob der Benutzername im Token vorhanden ist
+       
         // Setzt den Benutzernamen aus dem 'sub' Claim des Tokens
-        setUsername(decodedToken.sub || "User");  
+        setUsername(user.username || "User");  
       } catch (error) {
         // Gibt einen Fehler in der Konsole aus, wenn das Entschlüsseln des Tokens fehlschlägt
         console.error('Fehler beim Entschlüsseln des Tokens:', error);
