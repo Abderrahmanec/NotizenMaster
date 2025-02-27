@@ -39,8 +39,8 @@ const Form = styled("form")(({ theme }) => ({
 
 export function Login() {
   // Zustandsvariablen für Formulardaten, Fehler, Snackbar und Passwortsichtbarkeit
-  const [formData, setFormData] = useState({ username: "", password: "" });
-  const [errors, setErrors] = useState({ username: "", password: "" });
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -79,7 +79,7 @@ export function Login() {
 
     // Validierung der Formulareingaben
     const newErrors = {};
-    if (!formData.username) newErrors.username = "Benutzername ist erforderlich";
+    if (!formData.email) newErrors.email = "Benutzername ist erforderlich";
     if (!formData.password) newErrors.password = "Passwort ist erforderlich";
     else if (formData.password.length < 6)
       newErrors.password = "Passwort muss mindestens 6 Zeichen lang sein";
@@ -95,7 +95,8 @@ export function Login() {
       if (data.success) {
         localStorage.setItem("token", data.token); // Speichert das Token im lokalen Speicher
         const decodedUser = jwtDecode(data.token); // Dekodiert das Token, um Benutzerdaten zu extrahieren
-        setUser({ token: data.token, ...decodedUser }); // Benutzerstatus global im Kontext aktualisieren
+        const email = decodedUser.sub.split("@")[0];
+        setUser({ token: data.token,email }); // Benutzerstatus global im Kontext aktualisieren
 
         setSnackbarMessage("Login erfolgreich!"); // Erfolgreiche Anmeldung
         setSnackbarType("success");
@@ -134,14 +135,14 @@ export function Login() {
                 margin="normal"
                 required
                 fullWidth
-                id="username"
-                label="Benutzername"
-                name="username"
+                id="email"
+                label="Email Address"
+                name="email"
                 autoComplete="off"
-                value={formData.username}
+                value={formData.email}
                 onChange={handleChange}
-                error={!!errors.username}
-                helperText={errors.username}
+                error={!!errors.email}
+                helperText={errors.email}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
