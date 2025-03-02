@@ -1,0 +1,16 @@
+# Exclude Maven target directory
+target/
+/target
+
+# Exclude any environment-specific files
+.env
+
+# Exclude .git and IDE-specific files
+.git/
+.idea/
+*.log
+*.md
+
+# Exclude local configuration or files related to IDE or OS
+*.iml
+.vscode/
