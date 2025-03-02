@@ -1,11 +1,12 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "DOCKERFILE",
-    "dockerfilePath": "Dockerfile"
+    "builder": "NIXPACKS",
+    "buildCommand": "chmod +x ./mvnw && ./mvnw clean package -DskipTests && ls -la target/"
   },
   "deploy": {
     "numReplicas": 1,
+    "startCommand": "sh -c \"find target/ -name '*.jar' | xargs java -jar\"",
     "restartPolicyType": "ALWAYS"
   }
 }
