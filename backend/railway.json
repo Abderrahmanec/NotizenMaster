@@ -1,26 +1,12 @@
 {
-  "$schema": "https://railway.com/railway.schema.json",
+  "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "DOCKERFILE",
-    "buildCommand": "mvnw clean package -DskipTests",
-    "nixpacksPlan": {
-      "providers": [
-        "...",
-        "java"
-      ]
-    },
-    "dockerfilePath": "backend/Dockerfile"
+    "builder": "NIXPACKS",
+    "buildCommand": "chmod +x build.sh && ./build.sh"
   },
   "deploy": {
-    "runtime": "V2",
     "numReplicas": 1,
-    "startCommand": "java -jar target/backend-0.0.1-SNAPSHOT.jar",
-    "sleepApplication": true,
-    "multiRegionConfig": {
-      "us-west2": {
-        "numReplicas": 1
-      }
-    },
+    "startCommand": "java -jar app.jar",
     "restartPolicyType": "ALWAYS"
   }
 }
