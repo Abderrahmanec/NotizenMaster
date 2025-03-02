@@ -1,0 +1,15 @@
+# Exclude node_modules (since we do npm install inside the Dockerfile)
+node_modules/
+
+# Exclude build artifacts
+build/
+dist/
+
+# Exclude any environment-specific files
+.env
+
+# Exclude any other unnecessary files or directories
+.git/
+.idea/
+*.log
+*.md

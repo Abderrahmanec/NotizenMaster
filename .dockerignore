@@ -1,0 +1,26 @@
+# Exclude node_modules from frontend (React) to reduce image size
+/frontend/node_modules/
+
+# Exclude build artifacts for frontend (React) build output
+/frontend/build/
+
+# Exclude backend (Spring Boot) build artifacts
+/backend/target/      # Maven target directory (compiled classes and jars)
+
+/backend/node_modules/ # If you have node_modules in your backend (for frontend assets)
+
+# Exclude unnecessary development files (IDE, editor-specific files)
+.git/
+.idea/
+*.log
+*.md
+*.bak
+*.swp
+
+# Docker-related files (don't need to copy Dockerfile or docker-compose.yml into the image)
+docker-compose.yml
+Dockerfile
+
+# Exclude environment files (e.g. sensitive data or environment-specific configuration)
+.env
+
