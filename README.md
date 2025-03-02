@@ -28,10 +28,11 @@ Das Projekt besteht aus zwei Hauptordnern:
 
 ### Voraussetzungen
 
-Stelle sicher, dass du die folgenden Tools auf deinem Computer installiert hast:
+Stelle sicher, dass Sie die folgenden Tools auf deinem Computer installiert haben:
 
 - **Java 17** oder höher (für das Spring Boot Backend).
 - **Node.js** und **npm** (für das React-Frontend).
+- **Docker** (optional, falls du die Containerlösung nutzen möchtest).
 
 ### Backend installieren
 
@@ -47,7 +48,7 @@ Stelle sicher, dass du die folgenden Tools auf deinem Computer installiert hast:
     mvn spring-boot:run
     ```
 
-    Der Server läuft nun auf `http://localhost:8080`.
+   Der Server läuft nun auf `http://localhost:8080`.
 
 ### Frontend installieren
 
@@ -68,14 +69,38 @@ Stelle sicher, dass du die folgenden Tools auf deinem Computer installiert hast:
     npm start
     ```
 
-    Das Frontend wird dann auf `http://localhost:3000` laufen.
+   Das Frontend wird dann auf `http://localhost:3000` laufen.
 
-## Nutzung
+## Docker-Option
 
-- Um Notizen hinzuzufügen, zu bearbeiten oder zu löschen, melde dich mit deinem Benutzerkonto an.
-- Du kannst Tags zu Notizen hinzufügen und Bilder hochladen, um deine Notizen besser zu organisieren.
+Sie können auch Docker verwenden, um die Anwendung als Container zu betreiben. Die Anwendung besteht aus zwei Hauptcontainern: **Frontend** und **Backend**.
 
+### Docker-Container erstellen
 
-## Autor
+Um die Docker-Container zu bauen und zu starten, führen Sie die folgenden Befehle aus:
 
-- **Mohamed Cheikh** -
+1. **Backend- und Frontend-Container bauen:**
+
+    ```bash
+    docker-compose build --no-cache --force-rm
+    ```
+
+   Dies wird die Container für das Backend und Frontend erstellen.
+
+2. **Container starten:**
+
+    ```bash
+    docker-compose up
+    ```
+
+   Dies startet beide Container, und Sie können die Anwendung auf `http://localhost:3000` für das Frontend und `http://localhost:8080` für das Backend aufrufen.
+
+### Hinweis zur Docker-Container-Erstellung
+
+Nach dem Bauen der Docker-Container für **Frontend** und **Backend** werden die Images auf deinem System angezeigt. Die Ausgabe von `docker images` sollte in etwa so aussehen:
+
+```bash
+$ docker images
+REPOSITORY                                TAG            IMAGE ID       CREATED         SIZE
+notizenmaster-frontend                    latest         231459c49019   29 minutes ago  434MB
+notizenmaster-backend                     latest         3f7423bd0300   32 minutes ago  474MB
