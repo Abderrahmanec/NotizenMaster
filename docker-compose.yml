@@ -1,0 +1,26 @@
+services:
+  frontend:
+    build: ./frontend
+    container_name: notizenmaster-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build: ./backend
+    container_name: notizenmaster-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - JWT_SECRET=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhIiwiaWF0IjoxNzM1NzYxNjUyLCJleHAiOjE3MzU3OTc2NTJ9.mvH0Jjw3tjrXRf5fl55evl5Xjh5gMMU4jFNEWmbsh6s
+      - BUILD_TIMESTAMP=2025-03-02 02:34:28
+      - BUILD_USER=Abderrahmanec
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
