@@ -1,6 +1,4 @@
-# Exclude Maven target directory
-target/
-/target
+
 
 # Exclude any environment-specific files
 .env
