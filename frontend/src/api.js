@@ -2,7 +2,7 @@ import axios from "axios"; // Importiere Axios für HTTP-Anfragen
 import { jwtDecode } from "jwt-decode"; // Importiere jwt-decode für JWT-Token dekodierung
 
 // Setze die Basis-URL für API-Aufrufe (hier als lokale Entwicklungsumgebung)
-const API_URL = "https://notizenmaster-production.up.railway.app:8080";
+const API_URL = "https://notizenmaster-production.up.railway.app";
 
 // Erstelle eine Axios-Instanz mit Standardkonfiguration
 const api = axios.create({
