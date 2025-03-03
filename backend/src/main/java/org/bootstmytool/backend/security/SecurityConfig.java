@@ -22,6 +22,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Author Mohamed Cheikh
@@ -97,6 +98,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // Deaktiviert CSRF-Schutz
+
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Aktiviert CORS
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Erlaubt OPTIONS-Anfragen
@@ -123,7 +125,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3001", "https://notizen-master.vercel.app/")); // Frontend-URLs erlauben
+        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3001")); // Frontend-URLs erlauben
+        corsConfiguration.setAllowedOrigins(List.of("https://notizen-master.vercel.app")); // Erlaubt frontend
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Erlaubte HTTP-Methoden
         corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With")); // Erlaubte Header
         corsConfiguration.setAllowCredentials(true); // Erlaubt Cookies und Authentifizierung
