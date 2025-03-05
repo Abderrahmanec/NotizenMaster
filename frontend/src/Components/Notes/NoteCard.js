@@ -96,16 +96,16 @@ const NoteCard = ({ note, expandedNoteIds, handleToggleContent, handleDelete, na
                             onClick={() => handleToggleContent(note.id)}
                             style={{ padding: 0, marginBottom: "10px" }}
                         >
-                            {expandedNoteIds.includes(note.id) ? "Show Less" : "Show More"}
+                            {expandedNoteIds.includes(note.id) ? "Weniger " : "Mehr anzeigen"}
                         </Button>
                     )}
 
                     <Typography variant="body2" color="textSecondary" style={{ marginBottom: "10px" }}>
-                        <strong>Tags:</strong> {note.tags?.join(", ") || "No tags available"}
+                        <strong>Tag:</strong> {note.tags?.join(", ") || "No tags available"}
                     </Typography>
 
                     <Typography variant="body2" color="textSecondary">
-                        Created at: {new Date(note.createdAt).toLocaleString()}
+                    Erstellt am : {new Date(note.createdAt).toLocaleString()}
                     </Typography>
                 </CardContent>
 
@@ -177,7 +177,7 @@ const NoteCard = ({ note, expandedNoteIds, handleToggleContent, handleDelete, na
                                 <Divider sx={{ my: 2 }} />
 
                                 <Typography variant="subtitle2" gutterBottom>
-                                    Tags:
+                                    Tag:
                                 </Typography>
                                 <div style={{ marginBottom: '16px' }}>
                                     {selectedNote.tags?.map((tag, index) => (
