@@ -50,6 +50,12 @@ const Home = ({ searchTerm = "" }) => { // Standardmäßig leerer String, falls 
 
   // Filtert die Notizen basierend auf dem Suchbegriff
   useEffect(() => {
+
+
+  if (!Array.isArray(notes)) {
+    return;
+  }
+
     if (searchTerm.trim() === "") {
       setFilteredNotes(notes); // Falls Suchbegriff leer ist, alle Notizen anzeigen
     } else {
