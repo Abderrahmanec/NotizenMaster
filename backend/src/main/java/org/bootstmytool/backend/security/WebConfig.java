@@ -24,4 +24,22 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/backend/static/images/");
 
     }
+
+ /**
+     * Konfiguriert die CORS-Einstellungen für die Anwendung.
+     * @param registry Die Registry für die CORS-Konfiguration
+     */
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins(
+                    "https://notizen-master.vercel.app",
+                    "https://notizen-master-git-main-abderrahmanecs-projects.vercel.app"
+                )
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("Authorization", "Content-Type", "X-Requested-With")
+                .allowCredentials(true)
+                .maxAge(3600); // 1 hour
+    }
+    
 }
