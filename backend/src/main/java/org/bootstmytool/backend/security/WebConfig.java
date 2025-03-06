@@ -14,7 +14,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * Sie definiert, wie Ressourcen wie Bilder oder CSS-Dateien geladen werden.
  */
 @Configuration
-@EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {
 
     //die Methode addResourceHandlers() wird ueberschrieben, um die Konfiguration fuer die Ressourcen-Handler zu aendern
@@ -26,23 +25,5 @@ public class WebConfig implements WebMvcConfigurer {
 
     }
 
- /**
-     * Konfiguriert die CORS-Einstellungen für die Anwendung.
-     * @param registry Die Registry für die CORS-Konfiguration
-     */
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins(
-                    "https:((*.vercel.app",
-                    "https://notizen-master-*.vercel.app",
-                    "https://*-abderrahmanecs-projects.vercel.app",
-                    "http://localhost:3000" )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("Authorization", "Content-Type", "X-Requested-With")
-            .allowedHeaders("*") 
-                .allowCredentials(true)
-                .maxAge(3600); // 1 hour
-    }
-    
+
 }
