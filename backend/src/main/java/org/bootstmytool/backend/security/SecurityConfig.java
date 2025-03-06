@@ -126,8 +126,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-    corsConfiguration.setAllowedOrigins(Arrays.asList("https://notizen-master.vercel.app"));
-                corsConfiguration.setAllowedOrigins(Arrays.asList("https://*.vercel.app"));
+    corsConfiguration.setAllowedOrigins(Arrays.asList("https://notizen-master.vercel.app","https://*.vercel.app"));
         
          // Frontend-URLs erlauben
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Erlaubte HTTP-Methoden
