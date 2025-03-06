@@ -107,7 +107,7 @@ public class SecurityConfig {
                         .requestMatchers("/images/**").permitAll() //Erstellt eine neue Notiz.requestMatchers("/image/**").permitAll() // Erlaubt den Zugriff auf Benutzer
                         .requestMatchers("/image/**").permitAll() //Erstellt eine neue Notiz.requestMatchers("/image/**").permitAll() // Erlaubt den Zugriff auf Benutzer
                         .anyRequest().authenticated() // Alle anderen Anfragen erfordern Authentifizierung
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                      
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless-Session
 
@@ -126,11 +126,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-    corsConfiguration.setAllowedOrigins(Arrays.asList("https://notizen-master.vercel.app","https://*.vercel.app"));
+    corsConfiguration.setAllowedOrigins(Arrays.asList("https://notizen-master.vercel.app","https://*.vercel.app", "https://notizen-master-git-main-abderrahmanecs-projects.vercel.app"
+    "));
         
          // Frontend-URLs erlauben
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Erlaubte HTTP-Methoden
         corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With")); // Erlaubte Header
+          corsConfiguration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type")); // Exposed headers
+        corsConfiguration.setMaxAge(3600L); 
+        
         corsConfiguration.setAllowCredentials(true); // Erlaubt Cookies und Authentifizierung
         // Registrierung der CORS-Konfiguration für alle Endpunkte
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
