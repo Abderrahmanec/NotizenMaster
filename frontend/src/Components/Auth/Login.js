@@ -96,7 +96,7 @@ export function Login() {
         localStorage.setItem("token", data.token); // Speichert das Token im lokalen Speicher
         const decodedUser = jwtDecode(data.token); // Dekodiert das Token, um Benutzerdaten zu extrahieren
         const email = decodedUser.sub.split("@")[0];
-        setUser({ token: data.token,email }); // Benutzerstatus global im Kontext aktualisieren
+        setUser({ token: data.token, email: email ?? "" }); // Benutzerstatus global im Kontext aktualisieren
 
         setSnackbarMessage("Login erfolgreich!"); // Erfolgreiche Anmeldung
         setSnackbarType("success");
