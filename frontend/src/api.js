@@ -9,7 +9,6 @@ const api = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json", // Standardmäßiger Header für JSON-Daten
-    "Access-Control-Allow-Origin": "*",
   },
 });
 
