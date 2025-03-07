@@ -14,6 +14,7 @@ const Home = ({ searchTerm = "" }) => { // Standardmäßig leerer String, falls 
   const [successMessage, setSuccessMessage] = useState("");
   const [expandedNoteIds, setExpandedNoteIds] = useState([]);
   const navigate = useNavigate();
+  const [selectedTag, setSelectedTag] = useState(null);
 
   // Überprüft, ob das Token noch gültig ist
   const checkTokenExpiration = (token) => {
@@ -26,7 +27,7 @@ const Home = ({ searchTerm = "" }) => { // Standardmäßig leerer String, falls 
   const fetchNotes = async () => {
     const token = localStorage.getItem("token");
     if (!token || !checkTokenExpiration(token)) {
-      alert("Du bist abgemeldet.");
+      alert("Sie Sind Abgemeldet.");
       navigate("/login");
       return;
     }
@@ -50,23 +51,23 @@ const Home = ({ searchTerm = "" }) => { // Standardmäßig leerer String, falls 
 
   // Filtert die Notizen basierend auf dem Suchbegriff
   useEffect(() => {
+    if (!Array.isArray(notes)) return;
+    let filtered = notes;
 
-
-  if (!Array.isArray(notes)) {
-    return;
-  }
-
-    if (searchTerm.trim() === "") {
-      setFilteredNotes(notes); // Falls Suchbegriff leer ist, alle Notizen anzeigen
-    } else {
-      const filtered = notes.filter((note) =>
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(
+        (note) =>
           note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           note.content.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredNotes(filtered); // Gefilterte Notizen aktualisieren
     }
-  }, [searchTerm, notes]);
 
+    if (selectedTag) {
+      filtered = filtered.filter((note) => note.tags && note.tags.includes(selectedTag));
+    }
+
+    setFilteredNotes(filtered);
+  }, [searchTerm, notes, selectedTag]);
   // Löscht eine Notiz
   const handleDelete = async (noteId) => {
     try {
@@ -99,6 +100,11 @@ const Home = ({ searchTerm = "" }) => { // Standardmäßig leerer String, falls 
     );
   };
 
+
+  const handleTagClick = (tag) => {
+    setSelectedTag(tag === selectedTag ? null : tag);
+  };
+
   if (isLoading) return <div><CircularProgress /></div>;
 
   return (
@@ -112,6 +118,30 @@ const Home = ({ searchTerm = "" }) => { // Standardmäßig leerer String, falls 
         {/* Erfolg- und Fehlermeldungen anzeigen */}
         {successMessage && <Typography color="success" sx={{ marginBottom: "20px" }}>{successMessage}</Typography>}
         {error && <Typography color="error">{error}</Typography>}
+
+        <Box sx={{ display: "flex", gap: 1, marginBottom: 2 }}>
+          
+        {Array.from(new Set((Array.isArray(notes) ? notes : []).flatMap((note) => note.tags || []))).map((tag) => (
+  <Box
+    key={tag}
+    onClick={() => handleTagClick(tag)}
+    sx={{
+      padding: "5px 10px",
+      borderRadius: "16px",
+      cursor: "pointer",
+      backgroundColor: selectedTag === tag ? "primary.main" : "grey.300",
+      color: selectedTag === tag ? "white" : "black",
+      "&:hover": {
+        backgroundColor: selectedTag === tag ? "primary.dark" : "grey.400",
+      },
+    }}
+  >
+    {tag}
+  </Box>
+))}
+
+</Box>
+
 
         {/* Notizenliste anzeigen */}
         <Grid container spacing={3}>
