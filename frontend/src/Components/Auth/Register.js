@@ -99,7 +99,7 @@ function Register() {
 
     // Registrierung mit den Formulardaten
     const registrationData = {
-      email: formData.email,
+      email: formData.email.toLowerCase(),
       password: formData.password,
     };
 

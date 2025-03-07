@@ -79,7 +79,7 @@ export function Login() {
 
     // Validierung der Formulareingaben
     const newErrors = {};
-    if (!formData.email) newErrors.email = "Benutzername ist erforderlich";
+    if (!formData.email) newErrors.email = "Email ist erforderlich";
     if (!formData.password) newErrors.password = "Passwort ist erforderlich";
     else if (formData.password.length < 6)
       newErrors.password = "Passwort muss mindestens 6 Zeichen lang sein";
@@ -89,8 +89,15 @@ export function Login() {
       return;
     }
 
+
+    // E-Mail in Kleinbuchstaben umwandeln
+  const dataToSubmit = {
+    email: formData.email.toLowerCase(),
+    password: formData.password,
+  };
+
     try {
-      const data = await loginUser(formData); // Versucht, den Benutzer mit den Formulardaten anzumelden
+      const data = await loginUser(dataToSubmit); // Versucht, den Benutzer mit den Formulardaten anzumelden
 
       if (data.success) {
         localStorage.setItem("token", data.token); // Speichert das Token im lokalen Speicher
