@@ -43,9 +43,6 @@ const NoteCard = ({ note, expandedNoteIds, handleToggleContent, handleDelete, na
                 borderRadius: "8px",
                 boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                 transition: "box-shadow 0.3s ease",
-                ":hover": {
-                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-                },
             }}>
                 {/* Image Grid */}
                 {note.images?.length > 0 && (
@@ -105,7 +102,7 @@ const NoteCard = ({ note, expandedNoteIds, handleToggleContent, handleDelete, na
                     </Typography>
 
                     <Typography variant="body2" color="textSecondary">
-                    Erstellt am : {new Date(note.createdAt).toLocaleString()}
+                    Erstellt am: {new Date(note.createdAt).toLocaleString()}
                     </Typography>
                 </CardContent>
 
