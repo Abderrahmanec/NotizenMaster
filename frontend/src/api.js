@@ -35,7 +35,7 @@ const isTokenExpired = (token) => {
     const currentTime = Math.floor(Date.now() / 1000);
     return exp < currentTime;
   } catch (error) {
-    return true; // Treat as expired if decoding fails
+    return true; 
   }
 };
 
@@ -281,7 +281,7 @@ export const verifyUser = async (email, nameLength) => {
     // Make the POST request with JSON body
     const res = await axios.post('http://localhost:8080/api/auth/verify', { email, nameLength }, {
       headers: {
-        'Content-Type': 'application/json' // Ensures backend processes the request as JSON
+        'Content-Type': 'application/json' 
       }
     });
 console.log('reset-password response:', res.data);
@@ -291,7 +291,7 @@ console.log('the succes:', res.data.success);
   } catch (error) {
     // Handle error if it happens (e.g., 400 or 500 errors)
     console.error('Error resetting password:', error);
-    return error.response?.data || "Ein Fehler ist aufgetreten"; // Custom fallback error message
+    return error.response?.data || "Ein Fehler ist aufgetreten"; 
   }
 };
 
@@ -307,7 +307,7 @@ export const resetPassword = async (newPassword) => {
       { newPassword },
       {
         params: {
-          token: token // Sending the token as a query parameter
+          token: token 
         },
         headers: {
           'Content-Type': 'application/json'
