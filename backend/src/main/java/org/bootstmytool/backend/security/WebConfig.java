@@ -24,4 +24,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/backend/static/images/");
 
     }
+
+
 }
