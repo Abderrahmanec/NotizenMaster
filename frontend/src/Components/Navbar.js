@@ -1,124 +1,120 @@
-// Importiere notwendige React-Module und Hooks
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Typography } from "@mui/material";
 import {
     AppBar,
     Toolbar,
     Button,
-    Typography,
     IconButton,
     Drawer,
     Box,
     Avatar,
     Divider,
+    useMediaQuery,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
-import { useAuth } from "../context/AuthContext"; // Authentifizierungskontext importieren
-import nmicIcon from "../assets/iconNM.png"; // App-Logo
-import SearchBar from "./Notes/SearchBar"; // Suchleiste
-import { logoutUser } from "../api"; // Logout-Funktion importieren
+import { useAuth } from "../context/AuthContext";
+import nmicIcon from "../assets/iconNM.png";
+import SearchBar from "./Notes/SearchBar";
+import { logoutUser } from "../api";
 
-// Navbar-Komponente mit Dark-Mode-Umschaltung und Suchleiste
 const Navbar = ({ toggleDarkMode, darkMode, setSearchTerm, searchTerm }) => {
-    const { user, setUser } = useAuth(); // Authentifizierten Benutzer abrufen
-
+    const { user, setUser } = useAuth();
     const [mobileOpen, setMobileOpen] = React.useState(false);
     const navigate = useNavigate();
 
-    // Öffnet oder schließt das mobile Menü
     const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
-
-    // Funktion zum Abmelden des Benutzers
     const handleLogout = () => {
-        logoutUser(); // Token löschen
-        setUser(null); // Benutzerstatus zurücksetzen
-        navigate("/login"); // Weiterleitung zur Login-Seite
+        logoutUser();
+        setUser(null);
+        navigate("/login");
     };
 
-    // Seitenmenü für mobile Ansicht
-    const drawer = (
-        <Box sx={{ width: 250, height: "100%", display: "flex", flexDirection: "column" }}>
-            <Box sx={{ p: 2, textAlign: "center" }}>
-                <Avatar src={nmicIcon} sx={{ width: 200, height: 120, mx: "auto" }} />
-                {user && <Typography variant="subtitle1" sx={{ mt: 1 }}>{user.email}</Typography>}
-            </Box>
-            <Divider />
-            {user && (
-                <Box sx={{ p: 2 }}>
-                    <Button fullWidth variant="contained" color="secondary" onClick={() => { handleLogout(); handleDrawerToggle(); }}>
-                        Abmelden
-                    </Button>
-                </Box>
-            )}
-        </Box>
-    );
-
-    // Klick-Handler für das Benutzer-Avatar-Icon
     const cli = () => {
         alert("Willkommen bei Nmic");
     };
 
+    // Detect if screen width is less than 600px (mobile)
+    const isMobile = useMediaQuery("(max-width:600px)");
+
     return (
         <>
-            {/* Haupt-Navigationsleiste */}
             <AppBar position="static" color="primary" enableColorOnDark sx={{ width: "100%" }}>
                 <Toolbar sx={{ display: "flex", justifyContent: "space-between", px: 3, width: "100%" }}>
-                    {/* Menü-Icon für mobile Ansicht */}
+                    {/* Mobile Menu Icon */}
                     <IconButton edge="start" color="inherit" onClick={handleDrawerToggle} sx={{ display: { xs: "flex", sm: "none" } }}>
-                        <MenuIcon /> 
+                        <MenuIcon />
                     </IconButton>
 
-                    {/* Logo und Startseiten-Link */}
+                    {/* Logo */}
                     <Box component={Link} to="/" sx={{ display: "flex", alignItems: "center", textDecoration: "none", color: "inherit" }}>
                         <img src={nmicIcon} alt="Logo" style={{ height: 80, width: 120, marginRight: 8 }} />
                     </Box>
 
-                    {/* Suchleiste wird nur angezeigt, wenn ein Benutzer eingeloggt ist */}
-                    {user && (
-                        <Box sx={{
-                            flexGrow: 1,
-                            maxWidth: 600,
-                            mx: 'auto', // Zentriert die Suchleiste horizontal
-                            marginTop: '.3cm', // Abstand nach oben
-                        }}>
+                    {/* Hide Search Bar on Mobile */}
+                    {!isMobile && user && (
+                        <Box sx={{ flexGrow: 1, maxWidth: 600, mx: "auto", marginTop: ".3cm" }}>
                             <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
                         </Box>
                     )}
 
-                    {/* Navigationsoptionen für eingeloggte Benutzer */}
-                    <Box sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center", gap: 2 }}>
+                    {/* Right-side Buttons */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                         {user && (
                             <>
-                                {/* Logout-Button */}
-                                <Button color="inherit" onClick={handleLogout} sx={{ textTransform: "none", fontWeight: 500 }}>
+                                {/* Show "Neue Notiz" button ONLY on mobile */}
+                                {isMobile && (
+                                    <Button color="inherit" component={Link} to="/add-note" sx={{ textTransform: "none", fontWeight: 500 }}>
+                                        Neue Notiz
+                                    </Button>
+                                )}
+
+                                {/* Logout Button (only visible on desktop) */}
+                                <Button color="inherit" onClick={handleLogout} sx={{ textTransform: "none", fontWeight: 500, display: { xs: "none", sm: "flex" } }}>
                                     Logout
                                 </Button>
 
-                                {/* Benutzer-Avatar */}
-                                <Avatar sx={{ bgcolor: "secondary.main", width: 40, height: 40, ml: 2, cursor: "pointer" }} onClick={cli}>
+                                {/* Avatar (only visible on desktop) */}
+                                <Avatar sx={{ bgcolor: "secondary.main", width: 40, height: 40, ml: 2, cursor: "pointer", display: { xs: "none", sm: "flex" } }} onClick={cli}>
                                     {user?.username?.charAt(0).toUpperCase()}
                                 </Avatar>
 
-                                {/* Button zum Hinzufügen einer neuen Notiz */}
-                                <Button color="inherit" component={Link} to="/add-note" sx={{ textTransform: "none", fontWeight: 500 }}>
-                                    Neue Notiz
-                                </Button>
+                                {/* Hide Dark Mode Toggle on Mobile */}
+                                {!isMobile && (
+                                    <IconButton color="inherit" onClick={toggleDarkMode}>
+                                        {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+                                    </IconButton>
+                                )}
                             </>
                         )}
-
-                        {/* Umschalter für Dark-/Light-Mode */}
-                        <IconButton color="inherit" onClick={toggleDarkMode}>
-                            {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-                        </IconButton>
                     </Box>
                 </Toolbar>
             </AppBar>
 
-            {/* Seitliches Menü für mobile Geräte */}
+            {/* Mobile Drawer Menu */}
             <Drawer variant="temporary" open={mobileOpen} onClose={handleDrawerToggle}>
-                {drawer}
+                <Box sx={{ width: 250, height: "100%", display: "flex", flexDirection: "column" }}>
+                    <Box sx={{ p: 2, textAlign: "center" }}>
+                        <Avatar src={nmicIcon} sx={{ width: 200, height: 120, mx: "auto" }} />
+                        {user && <Typography variant="subtitle1" sx={{ mt: 1 }}>{user.email}</Typography>}
+                    </Box>
+                    <Divider />
+                    {user && (
+                        <Box sx={{ p: 2 }}>
+                            {/* Add New Note Button in Mobile Menu */}
+                            <Button fullWidth variant="contained" color="primary" component={Link} to="/add-note" onClick={handleDrawerToggle}>
+                                Neue Notiz
+                            </Button>
+
+                            {/* Logout Button */}
+                            <Button fullWidth variant="contained" color="secondary" onClick={() => { handleLogout(); handleDrawerToggle(); }} sx={{ mt: 1 }}>
+                                Abmelden
+                            </Button>
+                        </Box>
+                    )}
+                </Box>
             </Drawer>
         </>
     );
