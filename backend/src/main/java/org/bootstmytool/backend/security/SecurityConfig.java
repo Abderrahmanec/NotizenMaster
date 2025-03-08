@@ -22,7 +22,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * @Author Mohamed Cheikh
@@ -98,7 +97,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // Deaktiviert CSRF-Schutz
-
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Aktiviert CORS
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Erlaubt OPTIONS-Anfragen
@@ -107,7 +105,6 @@ public class SecurityConfig {
                         .requestMatchers("/images/**").permitAll() //Erstellt eine neue Notiz.requestMatchers("/image/**").permitAll() // Erlaubt den Zugriff auf Benutzer
                         .requestMatchers("/image/**").permitAll() //Erstellt eine neue Notiz.requestMatchers("/image/**").permitAll() // Erlaubt den Zugriff auf Benutzer
                         .anyRequest().authenticated() // Alle anderen Anfragen erfordern Authentifizierung
-                      
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless-Session
 
@@ -126,21 +123,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-    corsConfiguration.setAllowedOrigins(Arrays.asList("https://notizen-master-*.vercel.app","https://*.vercel.app","https://*-abderrahmanecs-projects.vercel.app" ,
-                                                      "https://notizen-master-git-main-abderrahmanecs-projects.vercel.app"
-                
-    
-                                                     
-                                                     ));
-        
-         // Frontend-URLs erlauben
+        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3001", "http://192.168.178.144:3000")); // Frontend-URLs erlauben
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Erlaubte HTTP-Methoden
-            corsConfiguration.setAllowedHeaders(Arrays.asList("*")); 
         corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With")); // Erlaubte Header
-          corsConfiguration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type")); // Exposed headers
-         config.setAllowCredentials(true);
-        corsConfiguration.setMaxAge(3600L); 
-        
         corsConfiguration.setAllowCredentials(true); // Erlaubt Cookies und Authentifizierung
         // Registrierung der CORS-Konfiguration für alle Endpunkte
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
