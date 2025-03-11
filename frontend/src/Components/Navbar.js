@@ -87,6 +87,22 @@ const Navbar = ({ toggleDarkMode, darkMode, setSearchTerm, searchTerm }) => {
 
                     {/* Right-side Buttons */}
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        
+                      
+                    <IconButton 
+                                color="inherit" 
+                                onClick={toggleDarkMode} 
+                                sx={{ 
+                                    borderRadius: 2, 
+                                    backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+                                    "&:hover": { 
+                                        backgroundColor: darkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.2)",
+                                    },
+                                }}
+                            >
+                                {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+                            </IconButton>
+                                            
                         {user && (
                             <>
                                 {/* Show "Neue Notiz" button on desktop */}
@@ -111,22 +127,7 @@ const Navbar = ({ toggleDarkMode, darkMode, setSearchTerm, searchTerm }) => {
                                     </Button>
                                 )}
 
-                                {/* Dark Mode Toggle */}
-                                {!isMobile && (
-                                    <IconButton 
-                                        color="inherit" 
-                                        onClick={toggleDarkMode} 
-                                        sx={{ 
-                                            borderRadius: 2, 
-                                            backgroundColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
-                                            "&:hover": { 
-                                                backgroundColor: darkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.2)",
-                                            },
-                                        }}
-                                    >
-                                        {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-                                    </IconButton>
-                                )}
+                           
 
                                 {/* Logout Button (only visible on desktop) */}
                                 <Button 
@@ -148,6 +149,11 @@ const Navbar = ({ toggleDarkMode, darkMode, setSearchTerm, searchTerm }) => {
                                     Logout
                                 </Button>
 
+
+
+
+
+
                                 {/* Avatar (only visible on desktop) */}
                                 <Avatar 
                                     sx={{ 
@@ -167,6 +173,11 @@ const Navbar = ({ toggleDarkMode, darkMode, setSearchTerm, searchTerm }) => {
                                 </Avatar>
                             </>
                         )}
+
+
+                                      
+                          
+                        
                     </Box>
                 </Toolbar>
             </AppBar>
