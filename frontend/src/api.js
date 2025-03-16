@@ -326,3 +326,45 @@ export const resetPassword = async (newPassword) => {
     return error.response?.data || { success: false, error: "Unbekannter Fehler. Bitte versuchen Sie es später erneut." };
   }
 };
+
+
+
+
+//diese Methode  wird verwendet, um die Notiz als PDF zu exportieren
+const makeApiCalls = async (method, url, options = {}) => {
+  try {
+    const response = await axios({
+      method,
+      url,
+      ...options,  // Pass additional options like params, headers, etc.
+    });
+    return response;  // Returns the response object
+  } catch (error) {
+    console.error("API Call Error: ", error);
+    throw error;  // Rethrow the error to be handled in the calling function
+  }
+};
+
+
+
+//diese Methode  wird verwendet, um die Notiz als PDF zu exportieren
+export const extractToPdf = async (noteId) => {
+  try {
+    const response = await makeApiCalls("get", `http://localhost:8080/pdf/${noteId}/export/pdf`, {
+      responseType: "blob",  // handelt Antwort als Blob
+    });
+
+    // erstellt die URL für den Blob und fügt sie einem Link hinzu, um den Download zu starten
+    const link = document.createElement("a");
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = `note-${noteId}.pdf`; 
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);  // Entfernt den Link aus dem DOM
+  } catch (error) {
+    console.error("Error exporting note to PDF:", error);
+    alert("Fehler beim Exportieren der Notiz als PDF. Bitte versuche es erneut.");
+  }
+};
