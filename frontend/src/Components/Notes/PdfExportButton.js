@@ -23,7 +23,7 @@ const PdfExportButton = ({ note }) => {
                 marginLeft: "2 px", // Richtet den Button nach rechts aus
             }}
         >
-            Exportieren
+          
         </Button>
     );
 };
