@@ -102,6 +102,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Erlaubt OPTIONS-Anfragen
                         .requestMatchers("/api/auth/**").permitAll() // Authentifizierung wird für Auth-Endpunkte nicht verlangt
                         .requestMatchers("/actuator/**").permitAll() // Erlaubt den Zugriff auf Actuator-Endpunkte
+                        .requestMatchers("/pdf/*/export/pdf").permitAll()
                         .requestMatchers("/images/**").permitAll() //Erstellt eine neue Notiz.requestMatchers("/image/**").permitAll() // Erlaubt den Zugriff auf Benutzer
                         .requestMatchers("/image/**").permitAll() //Erstellt eine neue Notiz.requestMatchers("/image/**").permitAll() // Erlaubt den Zugriff auf Benutzer
                         .anyRequest().authenticated() // Alle anderen Anfragen erfordern Authentifizierung
