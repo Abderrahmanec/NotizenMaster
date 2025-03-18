@@ -34,6 +34,22 @@ Stelle sicher, dass Sie die folgenden Tools auf deinem Computer installiert habe
 - **Node.js** und **npm** (für das React-Frontend).
 - **Docker** (optional, falls du die Containerlösung nutzen möchtest).
 
+
+KI-Features: RAG und Modell-Tuning mit Ollama
+Im neuen Branch haben wir KI-gestützte Funktionen hinzugefügt, um die Benutzererfahrung durch Retrieval-Augmented Generation (RAG) und Modell-Tuning zu verbessern.
+
+**RAG (Retrieval-Augmented Generation)**:
+RAG kombiniert die Leistungsfähigkeit von Datenbankabfragen mit generativen Modellen, um präzisere und relevantere Antworten zu liefern. In NotizenMaster nutzen wir diese Technik, um die Notizen und deren Inhalte automatisch zu analysieren und intelligente Vorschläge zu erstellen, basierend auf dem Kontext des Benutzers und dem vorhandenen Datenmaterial.
+
+Verwendung von RAG: Durch das Abrufen relevanter Daten aus der Datenbank und das Generieren von Texten in Echtzeit ermöglicht diese Funktion eine verbesserte Notiz-Erstellung und -Bearbeitung.
+Ziele: Verbesserung der Benutzerinteraktionen und Vereinfachung der Notizenbearbeitung durch automatisierte Vorschläge und Antworten.
+Modell-Tuning mit Ollama
+Wir verwenden Ollama, ein KI-Modell, das speziell für die Feinabstimmung und Optimierung von Generativen Modellen entwickelt wurde. Ollama hilft uns, die Modellleistung für spezifische Aufgaben, wie etwa das Generieren von Notizen oder das Hinzufügen von Texten, kontinuierlich zu verbessern.
+
+Verwendung von Ollama: Das Modell wird mit spezifischen Daten und Aufgaben trainiert, um genauere und relevantere Ergebnisse zu erzielen.
+Modell-Tuning-Prozess: Durch kontinuierliches Tuning und Feedback von Benutzern wird die Leistung des Modells kontinuierlich optimiert, sodass es sich besser an die Bedürfnisse der Benutzer anpasst.
+
+
 ### Backend installieren
 
 1. Navigiere in den `backend/`-Ordner:
