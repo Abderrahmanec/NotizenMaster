@@ -15,6 +15,8 @@ import {
     Chip
 } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
+import PdfExportButton from '../Notes/PdfExportButton';
+
 
 const NoteCard = ({ note, expandedNoteIds, handleToggleContent, handleDelete, navigate }) => {
     const [selectedNote, setSelectedNote] = useState(null);
@@ -118,6 +120,7 @@ const NoteCard = ({ note, expandedNoteIds, handleToggleContent, handleDelete, na
                     <Button variant="outlined" color="secondary" onClick={() => handleDelete(note.id)}>
                         Delete
                     </Button>
+                    <PdfExportButton note={note} />
                 </div>
             </Card>
 
