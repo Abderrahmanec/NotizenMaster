@@ -3,10 +3,7 @@ package org.bootstmytool.backend.controller;
 import org.bootstmytool.backend.dto.NoteDTO;
 import org.bootstmytool.backend.model.Image;
 import org.bootstmytool.backend.model.Note;
-import org.bootstmytool.backend.service.ImageService;
-import org.bootstmytool.backend.service.JwtService;
-import org.bootstmytool.backend.service.NoteService;
-import org.bootstmytool.backend.service.UserService;
+import org.bootstmytool.backend.service.*;
 import org.bootstmytool.backend.model.User;
 import org.bootstmytool.backend.utils.ProcessImage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,16 +41,18 @@ public class NoteController {
     private final NoteService noteService;
     private final UserService userService;
     private final JwtService jwtService;
+    private final OllamaService ollamaService;
 
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
 
     // NoteController-Konstruktor mit den erforderlichen Services
     @Autowired
-    public NoteController(NoteService noteService, UserService userService, JwtService jwtService, ImageService imageService) {
+    public NoteController(NoteService noteService, UserService userService, JwtService jwtService, ImageService imageService, OllamaService ollamaService) {
         this.noteService = noteService;
         this.userService = userService;
         this.jwtService = jwtService;
+        this.ollamaService = ollamaService;
     }
 
 
@@ -265,6 +266,17 @@ public class NoteController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Fehler: " + e.getMessage());
         }
+    }
+
+
+
+
+    @PostMapping("/summarize")
+    public ResponseEntity<String> summarizeText(@RequestBody Map<String, String> request) {
+        String text = request.get("text");
+        return ollamaService.summarizeText(text)
+                .map(ResponseEntity::ok)
+                .block();
     }
 
 }
