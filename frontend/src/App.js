@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import RouteList from "./RouteList"; // Import your route definitions
 import { AuthProvider } from "./context/AuthContext"; // Wrap app with AuthContext
 import EditNote from "./Components/Notes/EditNote"; // Import your EditNote component
+import SummarizeText from './Components/Notes/SummarizeText'; // Import your SummarizeText component
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -38,6 +39,11 @@ function App() {
           <Routes>
             <Route path="/edit/:id" element={<EditNote />} />
           </Routes>
+
+          <Routes>
+        <Route path="/summarize" element={<SummarizeText />} />
+        {/* Other routes */}
+      </Routes>
         </Router>
         
       </AuthProvider>

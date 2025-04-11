@@ -10,6 +10,8 @@ import ProtectedRoute from "./Components/ProtectedRoute";
 import ForgetPassword from "./Components/Auth/ForgetPassword";
 import Footer from "./Components/Footer";
 import ResetPassword from "./Components/Auth/ResetPassword";
+import SummarizeText from "./Components/Notes/SummarizeText";
+
 const RouteList = ({ toggleDarkMode, darkMode }) => {
     const [searchTerm, setSearchTerm] = React.useState("");
 
