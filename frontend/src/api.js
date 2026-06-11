@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode"; // Importiere jwt-decode für JWT-Token 
 
 // Setze die Basis-URL für API-Aufrufe (hier als lokale Entwicklungsumgebung)
 const API_URL = "http://localhost:8080";
+const Local_IP = "http://192.168.X.X:8080";
 
 // Erstelle eine Axios-Instanz mit Standardkonfiguration
 const api = axios.create({
